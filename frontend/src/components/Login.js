@@ -10,6 +10,7 @@ const Login = ({ onLogin, onRegister }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         
+        
         if (isRegistering) {
             onRegister(username, password); // Call register function
         } else {
