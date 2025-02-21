@@ -22,7 +22,7 @@ When contributing, please follow normal protocol:
 
     %(<branch_name>) git push origin
 
-5: Once finished with your issue, make a pull request:
+5: Once finished with your issue, stage changes:
 
     %(<branch_name>) git pull
 
@@ -32,3 +32,17 @@ When contributing, please follow normal protocol:
 
     %(<branch_name>) git status
 
+    %(<branch_name>) git push origin <branch_name>
+
+6: Navigate to Github page for the repository to make a pull request
+
+7: Click 'Compare and pull request'
+
+8: Ensure the 'Compare' branch is the correct branch you are trying to merge with main
+
+9: Make a title and description
+
+10: Finalize and select 'Create pull request'
+
+# Extra help on creating a pull request:
+    - https://youtu.be/nCKdihvneS0?si=e-joAvrX8SXJr8P9&t=59
