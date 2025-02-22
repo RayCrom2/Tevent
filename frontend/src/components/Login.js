@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const Login = ({ onLogin, onRegister }) => {
-    // State variables for username, password, and form toggle
+    // State variables for username, password, and form toggle (bool)
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isRegistering, setIsRegistering] = useState(false); // Toggle between login & signup

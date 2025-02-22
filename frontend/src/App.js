@@ -26,12 +26,12 @@ const App = () => {
         if (user) {
             setIsAuthenticated(true); // Set authentication to true if credentials are valid
         } else {
-            alert("Invalid username or password!"); // Show an error if credentials are incorrect
+            alert("You provided an invalid username or password! or you do not have an account!"); // Show an error if credentials are incorrect
         }
     };
 
     // Function to handle new user registration
-    const handleRegister = (username, password) => {
+    const handleRegister = (Name, email, username, password) => {
         // Retrieve the list of registered users from local storage
         const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
 
@@ -57,7 +57,7 @@ const App = () => {
         <div>
             {/* If the user is authenticated, show a welcome message */}
             {isAuthenticated ? (
-                <h1>Welcome to the App!</h1>
+                <h1>Hello there welcome to the event App!</h1>
             ) : (
                 // Otherwise, show the Login component and pass down login & register functions as props
                 <Login onLogin={handleLogin} onRegister={handleRegister} />
