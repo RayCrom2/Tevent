@@ -1,13 +1,33 @@
 const mongoose = require("mongoose");
 
+
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
-    password: { type: String, required: true }, // Will store hashed passwords
+    password: { type: String, required: true },
     dateOfBirth: { type: Date },
-    eventsGoing: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }], // Events the user is attending
-    pastEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }], // Events the user attended
-    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }] // Friends list
-});
-
-module.exports = mongoose.model("User", UserSchema);
-
+    role: {
+      type: String,
+      enum: ['user', 'moderator', 'admin'],
+      default: 'user'
+    },
+    CreateEventPermission: {
+      type: Boolean,
+      default: false,
+      required: true
+    },
+    isBanned: {
+      type: Boolean,
+      default: false
+    },
+    eventLimit: {
+      type: Number,
+      default: 5
+    },
+    lastEventCreatedAt: {
+      type: Date
+    },
+    eventsGoing: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
+    pastEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+  });
+  module.exports = mongoose.model("User", UserSchema);
