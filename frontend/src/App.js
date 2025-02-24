@@ -1,12 +1,8 @@
 // Import necessary dependencies from React
 import React, { useState, useEffect } from 'react';
 import Login from './components/Login'; // Import the Login component
-import './App.css'
 
 const App = () => {
-
-
-
     // State to track if a user is authenticated
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -58,9 +54,7 @@ const App = () => {
     };
 
     return (
-        
-           <div>
-
+        <div>
             {/* If the user is authenticated, show a welcome message */}
             {isAuthenticated ? (
                 <h1>Welcome to the App!</h1>
