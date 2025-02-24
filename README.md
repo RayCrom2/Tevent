@@ -26,12 +26,12 @@ When contributing, please follow normal protocol:
 
     %(<branch_name>) git pull
 
-    %(<branch_name>) git push origin
-    
-    %(<branch_name>) git commit -m "<commit_message>"
+    %(<branch_name>) git add .
 
     %(<branch_name>) git status
 
+    %(<branch_name>) git commit -m "<commit_message>"
+    
     %(<branch_name>) git push origin <branch_name>
 
 6: Navigate to Github page for the repository to make a pull request
