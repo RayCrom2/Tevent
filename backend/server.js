@@ -7,6 +7,10 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+app.get( '/', (req, res) => {
+  res.send("Backend is running.")
+});
+
 // Middleware
 app.use(express.json());
 app.use(cors());
