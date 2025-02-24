@@ -1,0 +1,9 @@
+*{margin: 0;; padding:0}
+
+.navbar{
+    display:table;
+    justify-content: space-between;
+    background-color: white;
+    padding: 10px 16px;
+;
+}

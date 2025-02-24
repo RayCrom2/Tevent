@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import NavBar from './NavBar';
 
 const Login = ({ onLogin, onRegister }) => {
     // State variables for username, password, and form toggle
@@ -19,7 +20,10 @@ const Login = ({ onLogin, onRegister }) => {
     };
 
     return (
+
+        
         <div style={styles.container}>
+            <NavBar></NavBar>
             <h2>{isRegistering ? "Sign Up" : "Login"}</h2> {/* Dynamic title based on form mode */}
             
             <form onSubmit={handleSubmit} style={styles.form}>
