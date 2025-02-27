@@ -1,70 +1,65 @@
-// Import necessary dependencies from React
+
+
 import React, { useState, useEffect } from 'react';
-import Login from './components/Login'; // Import the Login component
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import Menu from './components/Menu';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+import Events from './pages/Events';
 
 const App = () => {
-    // State to track if a user is authenticated
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // State to store registered users
-    const [users, setUsers] = useState([]);
-
-    // useEffect hook to load users from local storage when the component mounts
     useEffect(() => {
-        const storedUsers = JSON.parse(localStorage.getItem("users")); // Retrieve stored users from local storage
-        if (storedUsers) setUsers(storedUsers); // Set users state if users exist in storage
-    }, []); // Runs only once when the component mounts
+        const token = localStorage.getItem("token");
+        if (token) {
+            setIsAuthenticated(true);
+        }
+    }, []);
 
-    // Function to handle user login
     const handleLogin = (username, password) => {
-        // Retrieve the list of registered users from local storage
         const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
-
-        // Check if the entered credentials match any user in storedUsers
         const user = storedUsers.find(user => user.username === username && user.password === password);
 
         if (user) {
-            setIsAuthenticated(true); // Set authentication to true if credentials are valid
+            localStorage.setItem("token", "authenticated");
+            setIsAuthenticated(true);
         } else {
-            alert("Invalid username or password!"); // Show an error if credentials are incorrect
+            alert("Invalid username or password! Please register first.");
         }
     };
 
-    // Function to handle new user registration
     const handleRegister = (username, password) => {
-        // Retrieve the list of registered users from local storage
         const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
 
-        // Check if the username already exists
         if (existingUsers.some(user => user.username === username)) {
-            alert("Username already exists!"); // Alert user if the username is taken
+            alert("Username already exists!");
             return;
         }
 
-        // Add the new user to the users array
         const newUsers = [...existingUsers, { username, password }];
-
-        // Store the updated users list in local storage
         localStorage.setItem("users", JSON.stringify(newUsers));
 
-        // Update the state with the new users list
-        setUsers(newUsers);
+        alert("Registration successful! Please log in.");
+    };
 
-        alert("Registration successful! Please login."); // Notify user of successful registration
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        setIsAuthenticated(false);
     };
 
     return (
-        <div>
-            {/* If the user is authenticated, show a welcome message */}
-            {isAuthenticated ? (
-                <h1>Welcome to the App!</h1>
-            ) : (
-                // Otherwise, show the Login component and pass down login & register functions as props
-                <Login onLogin={handleLogin} onRegister={handleRegister} />
-            )}
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={!isAuthenticated ? <Login onLogin={handleLogin} onRegister={handleRegister} /> : <Navigate to="/menu" />} />
+                <Route path="/menu" element={isAuthenticated ? <Menu onLogout={handleLogout} /> : <Navigate to="/" />} />
+                <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/" />} />
+                <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/" />} />
+                <Route path="/events" element={isAuthenticated ? <Events /> : <Navigate to="/" />} />
+            </Routes>
+        </Router>
     );
 };
 
-// Export the App component so it can be used in index.js
 export default App;
