@@ -1,5 +1,5 @@
 # Tevent
-A web application that catalogs all types of events that can be searched for using avariety of filters. 
+A web application that catalogs all types of events that can be searched for using a variety of filters. 
 The results will be based off of the zip code or location given by the user.
 
 # CONTRIBUTORS 
