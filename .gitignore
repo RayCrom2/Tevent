@@ -1,0 +1,49 @@
+# =======================================
+# 🚀 Optimized .gitignore for Tevent Project
+# =======================================
+
+# 📌 Ignore dependencies (Backend & Frontend)
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# 📌 Ignore package lock files (Optional, if using only package.json)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 📌 Ignore build & dist folders
+dist/
+build/
+backend/dist/
+frontend/build/
+
+# 📌 Ignore logs & debug files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 📌 Ignore environment variables (Prevents exposing secrets)
+.env
+backend/.env
+backend/backend.env
+frontend/.env
+
+# 📌 Ignore database files (MongoDB local storage)
+data/
+dump/
+*.db
+*.sqlite
+*.mongodb
+*.tgz
+
+# 📌 Ignore editor settings & system files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
