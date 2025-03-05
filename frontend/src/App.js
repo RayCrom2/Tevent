@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './components/Login';
@@ -13,35 +12,12 @@ const App = () => {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (token) {
-            setIsAuthenticated(true);
-        }
+        setIsAuthenticated(!!token); // Converts token existence to boolean
     }, []);
 
-    const handleLogin = (username, password) => {
-        const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
-        const user = storedUsers.find(user => user.username === username && user.password === password);
-
-        if (user) {
-            localStorage.setItem("token", "authenticated");
-            setIsAuthenticated(true);
-        } else {
-            alert("Invalid username or password! Please register first.");
-        }
-    };
-
-    const handleRegister = (username, password) => {
-        const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
-
-        if (existingUsers.some(user => user.username === username)) {
-            alert("Username already exists!");
-            return;
-        }
-
-        const newUsers = [...existingUsers, { username, password }];
-        localStorage.setItem("users", JSON.stringify(newUsers));
-
-        alert("Registration successful! Please log in.");
+    const handleLogin = () => {
+        localStorage.setItem("token", "dummyToken"); // Ensure token is stored
+        setIsAuthenticated(true);
     };
 
     const handleLogout = () => {
@@ -52,7 +28,7 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={!isAuthenticated ? <Login onLogin={handleLogin} onRegister={handleRegister} /> : <Navigate to="/menu" />} />
+                <Route path="/" element={isAuthenticated ? <Navigate to="/menu" /> : <Login onLogin={handleLogin} />} />
                 <Route path="/menu" element={isAuthenticated ? <Menu onLogout={handleLogout} /> : <Navigate to="/" />} />
                 <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/" />} />
                 <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/" />} />
