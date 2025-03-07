@@ -29,9 +29,9 @@ const Login = ({ onLogin }) => {
         e.preventDefault(); 
         setLoading(true); 
     
-        //const endpoint = isRegistering ? "/auth/register" : "/auth/login";
-        const endpoint = isRegistering ? "/register" : "/login"; //Correct
-        const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+       const endpoint = isRegistering ? "/auth/register" : "/auth/login";
+       const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+       //const endpoint = isRegistering ? "/register" : "/login";
     
         // Log the data before sending
         console.log("Submitting data:", { username, password });
