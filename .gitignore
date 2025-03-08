@@ -27,10 +27,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # 📌 Ignore environment variables (Prevents exposing secrets)
-.env
-backend/.env
-backend/backend.env
-frontend/.env
+
 
 # 📌 Ignore database files (MongoDB local storage)
 data/
@@ -46,4 +43,3 @@ dump/
 *.sublime-project
 *.sublime-workspace
 .DS_Store
-Thumbs.db
