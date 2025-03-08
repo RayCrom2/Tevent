@@ -7,3 +7,73 @@
     padding: 10px 16px;
 ;
 }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #d5d5db;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: rgb(246, 246, 246);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header h1 {
+    text-align: center;
+    color: #333;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+form label {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+form input, form textarea {
+    margin-top: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+form button {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #0d0d0d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #1da91d;
+}
+
+.profile-display {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.profile-display img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-top: 0;
+}
+
+.profile-display p {
+    font-size: 18px;
+    color: #a94040;
+}
