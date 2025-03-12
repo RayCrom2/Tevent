@@ -28,6 +28,12 @@ router.post("/register", async (req, res) => {
         const existingUser = await User.findOne({ username });
         if (existingUser) return res.status(400).json({ message: "Username already taken" });
 
+        if (!isStrongPassword(password)) {
+            return res.status(400).json({
+                message: "Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character."
+            });
+        }
+
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
