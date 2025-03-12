@@ -31,12 +31,20 @@ const Login = ({ onLogin }) => {
         e.preventDefault(); 
         setLoading(true); 
     
+<<<<<<< HEAD
+=======
+        //***************** Added this for the user autenticatin and database *************** */
+>>>>>>> 8be6857 (Updated Login component and server configurations)
        const endpoint = isRegistering ? "/auth/register" : "/auth/login";
        const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
        //const endpoint = isRegistering ? "/register" : "/login";
     
         // Log the data before sending
         console.log("Submitting data:", { username, password });
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8be6857 (Updated Login component and server configurations)
     
         try {
             const response = await fetch(`${backendUrl}${endpoint}`, {
@@ -71,6 +79,31 @@ const Login = ({ onLogin }) => {
             setLoading(false);
         }
     };
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     setLoading(true);
+
+    //     try {
+    //         if (isRegistering) {
+    //             await registerUser(username, password);
+    //             alert("Registration successful! Please log in.");
+    //             setIsRegistering(false);
+    //         } else {
+    //             const data = await loginUser(username, password);
+    //             localStorage.setItem("token", data.token);
+    //             onLogin();
+    //         }
+
+    //         setUsername('');
+    //         setPassword('');
+    //     } catch (error) {
+    //         console.error("Error:", error);
+    //         alert(error.message);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     return (
         // Container for the login/registration form, styled using imported styles
