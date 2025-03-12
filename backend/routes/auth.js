@@ -1,13 +1,23 @@
 
 require("dotenv").config({ path: "backend.env" });
-console.log("✅ Loaded JWT_SECRET:", process.env.JWT_SECRET); // Debugging line
+console.log(" Loaded JWT_SECRET:", process.env.JWT_SECRET); // Debugging line
 const express = require("express");
-//const bcrypt = require("bcrypt");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
+//const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const router = express.Router();
+
+function isStrongPassword(password) {
+    const minLength = 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[\W_]/.test(password);
+
+    return password.length >= minLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
+}
 
 // Register a user
 router.post("/register", async (req, res) => {

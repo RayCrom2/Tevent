@@ -7,6 +7,8 @@ import { registerUser, loginUser } from '../services/authService';
 // Import styles for the authentication component
 import styles from '../styles/authStyles';  
 
+import PasswordStrengthMeter from './PasswordStrengthMeter';
+
 
 // This component provides both login and registration functionality.
 // Users can toggle between login and registration modes.
@@ -105,6 +107,10 @@ const Login = ({ onLogin }) => {
                 </button>
             </form>
 
+            {/* Password Strength Meter */}
+            {isRegistering && <PasswordStrengthMeter password={password} />}
+                {!isRegistering }
+                
             {/* Toggle button to switch between login and registration modes */}
             <p style={styles.toggleText}>
                 {isRegistering ? "Already have an account?" : "Don't have an account?"}
