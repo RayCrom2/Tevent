@@ -25,6 +25,7 @@ const Login = ({ onLogin }) => {
     // State to track whether a request is currently being processed
     const [loading, setLoading] = useState(false);
 
+<<<<<<< HEAD
     // Handles form submission for both login and registration.
     // Sends user credentials to the backend and processes the response.
     const handleSubmit = async (e) => {
@@ -77,26 +78,58 @@ const Login = ({ onLogin }) => {
             alert(error.message);
         } finally {
             setLoading(false);
+=======
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        
+        if (isRegistering) {
+            onRegister(username, password); // Call register function
+        } else {
+            onLogin(username, password); // Call login function
+>>>>>>> 839ed47 (Disconnected backend)
         }
     };
 
+    // Handles form submission for both login and registration.
+    // Sends user credentials to the backend and processes the response.
     // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     setLoading(true);
-
+    //     e.preventDefault(); 
+    //     setLoading(true); 
+    
+    //    const endpoint = isRegistering ? "/auth/register" : "/auth/login";
+    // //    const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+    //    //const endpoint = isRegistering ? "/register" : "/login";
+    
+    //     // Log the data before sending
+    //     console.log("Submitting data:", { username, password });
+    
     //     try {
+    //         const response = await fetch(`${backendUrl}${endpoint}`, {
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({ username, password }),
+    //         });
+    
+    //         const data = await response.json();
+    
+    //         console.log("Server Response:", data); // Log server response
+    
+    //         if (!response.ok) {
+    //             throw new Error(data.message || "An error occurred. Please try again.");
+    //         }
+    
     //         if (isRegistering) {
-    //             await registerUser(username, password);
     //             alert("Registration successful! Please log in.");
     //             setIsRegistering(false);
+    //             setUsername('');
+    //             setPassword('');
     //         } else {
-    //             const data = await loginUser(username, password);
     //             localStorage.setItem("token", data.token);
+    //             setUsername('');
+    //             setPassword('');
     //             onLogin();
     //         }
-
-    //         setUsername('');
-    //         setPassword('');
     //     } catch (error) {
     //         console.error("Error:", error);
     //         alert(error.message);
@@ -104,6 +137,8 @@ const Login = ({ onLogin }) => {
     //         setLoading(false);
     //     }
     // };
+
+    
 
     return (
         // Container for the login/registration form, styled using imported styles
