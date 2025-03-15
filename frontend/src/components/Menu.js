@@ -9,7 +9,7 @@ const Menu = ({ onLogout }) => {
             <h1>Welcome to the Event App</h1>
             <nav>
                 <ul>
-                    <li><button onClick={() => navigate("/")}>Home</button></li>
+                    <li><button onClick={() => navigate("/home")}>Home</button></li>
                     <li><button onClick={() => navigate("/profile")}>Profile</button></li>
                     <li><button onClick={() => navigate("/events")}>Events</button></li>
                     <li><button onClick={onLogout}>Logout</button></li>

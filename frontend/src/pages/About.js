@@ -1,15 +1,15 @@
 import React from 'react';
 import Layout from '../components/Layout';
 
-const Home = () => {
+const About = () => {
     return (
         <div>
             <Layout>
-            <h1>Home Page</h1>
-            <p>Welcome to the Home Page!</p>
+            <h1>About Page</h1>
+            <p>Learn about our purpose here.</p>
             </Layout>
         </div>
     );
 };
 
-export default Home;
+export default About;
