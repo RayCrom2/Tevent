@@ -8,9 +8,9 @@ function Layout({ children }) {
   return (
     <div>
       {/* Header (Navbar) */}
-      <Navbar bg="light" expand="lg">
+      <Navbar style={{ backgroundColor: "#35e8ca" }} expand="lg">
         <Container>
-          <Navbar.Brand href="/">Tevent</Navbar.Brand>
+          <Navbar.Brand style={{ color: "#000000" }} href="/">Tevent</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
@@ -28,9 +28,9 @@ function Layout({ children }) {
       </Container>
 
       {/* Footer */}
-      <footer className="bg-light py-3 mt-auto">
+      <footer style={{ backgroundColor: "#000000" }} className="py-2 mt-auto">
         <Container className="text-center">
-          <span>© 2025 Los Postulates de Euclid</span>
+          <span style={{ color: "#FFFFFF" }}>© 2025 Los Postulates de Euclid</span>
         </Container>
       </footer>
     </div>
