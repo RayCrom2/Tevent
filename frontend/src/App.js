@@ -1,42 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css'; // import Bootstrap CSS
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Login from './components/Login';
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import Events from './pages/Events';
-import About from './pages/About';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
+import Login from "./components/Login";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Events from "./pages/Events";
+import About from "./pages/About";
+import Layout from "./components/Layout"; // ✅ Wrap content in Layout
 
 const App = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth0();
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        setIsAuthenticated(!!token); // Converts token existence to boolean
-    }, []);
+//   if (isLoading) return <h2>Loading...</h2>; // ✅ Show loading screen while Auth0 initializes
 
-    const handleLogin = () => {
-        localStorage.setItem("token", "dummyToken"); // Ensure token is stored
-        setIsAuthenticated(true);
-    };
+  return (
+    <Router>
+      {/* <Layout> */}
+        <Routes>
+          {/* ✅ Allow access to all pages without forcing login */}
+          <Route path="/" element={<Home />} />
+          <Route path="/profile" element={isAuthenticated ? <Profile /> : <h2>Please log in to see this page.</h2>} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Login />} />
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        setIsAuthenticated(false);
-    };
-
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={isAuthenticated ? <Navigate to="/home" /> : <Login onLogin={handleLogin} />} />
-                {/* <Route path="/menu" element={isAuthenticated ? <Menu onLogout={handleLogout} /> : <Navigate to="/" />} /> */}
-                <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/" />} />
-                <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/profile" />} />
-                <Route path="/events" element={isAuthenticated ? <Events /> : <Navigate to="/events" />} />
-                <Route path="/about" element={isAuthenticated ? <About /> : <Navigate to="/about" />} />
-            </Routes>
-        </Router>
-    );
+          {/* Catch-All Route */}
+          <Route path="*" element={<h2>Page Not Found</h2>} />
+        </Routes>
+      {/* </Layout> */}
+    </Router>
+  );
 };
 
 export default App;
