@@ -6,7 +6,8 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Events from "./pages/Events";
 import About from "./pages/About";
-import Layout from "./components/Layout"; // ✅ Wrap content in Layout
+import Layout from "./components/Layout";
+import { Nav } from "react-bootstrap";
 
 const App = () => {
   const { isAuthenticated, isLoading } = useAuth0();
@@ -15,19 +16,18 @@ const App = () => {
 
   return (
     <Router>
-      {/* <Layout> */}
         <Routes>
           {/* ✅ Allow access to all pages without forcing login */}
           <Route path="/" element={<Home />} />
-          <Route path="/profile" element={isAuthenticated ? <Profile /> : <h2>Please log in to see this page.</h2>} />
+          <Route path="/profile" element={isAuthenticated ? <Profile /> : <Layout> <h2> Please log in to see this page. </h2> </Layout>} />
           <Route path="/events" element={<Events />} />
           <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login />} />
 
           {/* Catch-All Route */}
-          <Route path="*" element={<h2>Page Not Found</h2>} />
+          <Route path="*" element={
+            <h2>Page Not Found</h2>} />
         </Routes>
-      {/* </Layout> */}
     </Router>
   );
 };

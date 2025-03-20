@@ -12,7 +12,10 @@ const Login = () => {
         <div>
           <img src={user.picture} alt="Profile" width="50" className="rounded-circle" />
           <br />
-          <button className="btn btn-danger mt-3" onClick={() => logout({ returnTo: window.location.origin })}>
+          <button
+            className="btn btn-danger mt-3"
+            onClick={() => logout({ returnTo: `${window.location.origin}/about` })}
+          >
             Logout
           </button>
         </div>
