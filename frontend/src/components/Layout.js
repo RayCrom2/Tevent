@@ -1,26 +1,114 @@
-import React from 'react';
-import { Container, Navbar, Nav } from 'react-bootstrap';
-import { Link } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react"; // ✅ Import Auth0 hook
-import 'bootstrap/dist/css/bootstrap.min.css'; // import Bootstrap CSS
+// import React from 'react';
+// import { Container, Navbar, Nav } from 'react-bootstrap';
+// import { Link } from "react-router-dom";
+// import { useAuth0 } from "@auth0/auth0-react"; // ✅ Import Auth0 hook
+// import 'bootstrap/dist/css/bootstrap.min.css'; // import Bootstrap CSS
 
-function Layout({ children }) {
-  const { loginWithRedirect, logout, isAuthenticated } = useAuth0(); // ✅ Get auth state
+// function Layout({ children }) {
+//   const { loginWithRedirect, logout, isAuthenticated } = useAuth0(); // ✅ Get auth state
+
+//   return (
+//     <div>
+//       {/* Header (Navbar) */}
+//       <Navbar style={{ backgroundColor: "#35e8ca" }} expand="lg">
+//         <Container>
+//           <Navbar.Brand style={{ color: "#000000" }} as={Link} to="/">Tevent</Navbar.Brand>
+//           <Navbar.Toggle aria-controls="basic-navbar-nav" />
+//           <Navbar.Collapse id="basic-navbar-nav">
+//             <Nav className="me-auto">
+//               <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
+//               <Nav.Link as={Link} to="/events">Events</Nav.Link>
+//               <Nav.Link as={Link} to="/about">About</Nav.Link>
+
+//               {/* ✅ Show Login or Logout dynamically */}
+//               {isAuthenticated ? (
+//                 <Nav.Link onClick={() => logout({ returnTo: window.location.origin })}>
+//                   Logout
+//                 </Nav.Link>
+//               ) : (
+//                 <Nav.Link onClick={() => loginWithRedirect()}>Login</Nav.Link>
+//               )}
+//             </Nav>
+//           </Navbar.Collapse>
+//         </Container>
+//       </Navbar>
+
+//       {/* Main Content */}
+//       <Container className="my-4">
+//         {children}
+//       </Container>
+
+//       {/* Footer */}
+//       <footer style={{ backgroundColor: "#000000" }} className="py-2 mt-auto">
+//         <Container className="text-center">
+//           <span style={{ color: "#FFFFFF" }}>© 2025 Los Postulates de Euclid</span>
+//         </Container>
+//       </footer>
+//     </div>
+//   );
+// }
+
+// export default Layout;
+
+import React, { useState } from "react";
+import { Container, Navbar, Nav } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
+import { FaSearch } from "react-icons/fa";
+import "bootstrap/dist/css/bootstrap.min.css";
+// Layout.js
+import '../styles/styles.css';
+
+
+const Layout = ({ children, onSearch }) => {
+  const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
+  const [searchInput, setSearchInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+
+  const handleSearch = () => {
+    onSearch(searchInput, locationInput);
+  };
 
   return (
     <div>
-      {/* Header (Navbar) */}
+      {/* SINGLE Navbar */}
       <Navbar style={{ backgroundColor: "#35e8ca" }} expand="lg">
-        <Container>
-          <Navbar.Brand style={{ color: "#000000" }} as={Link} to="/">Tevent</Navbar.Brand>
+        <Container className="d-flex justify-content-between">
+          <Navbar.Brand style={{ color: "#000000" }} as={Link} to="/">
+            Tevent
+          </Navbar.Brand>
+
+          {/* Search Bar */}
+          <div className="d-flex align-items-center search-bar-container">
+            <input
+              type="text"
+              className="form-control me-2"
+              placeholder="Search events..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <input
+              type="text"
+              className="form-control me-2"
+              placeholder="Enter city or location..."
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+            />
+            {/* <button className="btn btn-danger" onClick={handleSearch}>
+              <FaSearch /> Search
+            </button> */}
+            <button className="btn btn-danger" style={{ height: "35px", padding: "6px 10px", fontSize: "14px" }} onClick={handleSearch}>
+                <FaSearch style={{ fontSize: "12px" }} />
+            </button>
+          </div>
+
+          {/* Navigation Links */}
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
+            <Nav className="ms-auto d-flex align-items-center">
               <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
               <Nav.Link as={Link} to="/events">Events</Nav.Link>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
-
-              {/* ✅ Show Login or Logout dynamically */}
               {isAuthenticated ? (
                 <Nav.Link onClick={() => logout({ returnTo: window.location.origin })}>
                   Logout
@@ -33,19 +121,17 @@ function Layout({ children }) {
         </Container>
       </Navbar>
 
-      {/* Main Content */}
-      <Container className="my-4">
-        {children}
-      </Container>
+      {/* CONTENT */}
+      <Container className="my-4">{children}</Container>
 
-      {/* Footer */}
+      {/* SINGLE Footer */}
       <footer style={{ backgroundColor: "#000000" }} className="py-2 mt-auto">
         <Container className="text-center">
-          <span style={{ color: "#FFFFFF" }}>© 2025 Los Postulates de Euclid</span>
+          <span style={{ color: "#FFFFFF" }}>© 2025 Los Postulados de Euclid</span>
         </Container>
       </footer>
     </div>
   );
-}
+};
 
 export default Layout;
