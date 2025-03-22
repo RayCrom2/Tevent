@@ -78,34 +78,12 @@ const Layout = ({ children, onSearch }) => {
             Tevent
           </Navbar.Brand>
 
-          {/* Search Bar */}
-          <div className="d-flex align-items-center search-bar-container">
-            <input
-              type="text"
-              className="form-control me-2"
-              placeholder="Search events..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-            <input
-              type="text"
-              className="form-control me-2"
-              placeholder="Enter city or location..."
-              value={locationInput}
-              onChange={(e) => setLocationInput(e.target.value)}
-            />
-            {/* <button className="btn btn-danger" onClick={handleSearch}>
-              <FaSearch /> Search
-            </button> */}
-            <button className="btn btn-danger" style={{ height: "35px", padding: "6px 10px", fontSize: "14px" }} onClick={handleSearch}>
-                <FaSearch style={{ fontSize: "12px" }} />
-            </button>
-          </div>
+          
 
           {/* Navigation Links */}
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto d-flex align-items-center">
+            <Nav className="me-auto d-flex align-items-center">
               <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
               <Nav.Link as={Link} to="/events">Events</Nav.Link>
               <Nav.Link as={Link} to="/about">About</Nav.Link>

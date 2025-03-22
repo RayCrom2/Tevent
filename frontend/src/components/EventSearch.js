@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import GoogleMapReact from "google-map-react";
 import axios from "axios";
+import { FaSearch } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import fakeEvents from "../Fakedata/fakeEvents";
 
@@ -17,7 +17,7 @@ const LocationMarker = ({ lat, lng }) => (
   </div>
 );
 
-const EventSearch = ({ searchQuery, locationQuery }) => {
+const EventSearch = () => {
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
@@ -25,8 +25,9 @@ const EventSearch = ({ searchQuery, locationQuery }) => {
   const [distanceFilter, setDistanceFilter] = useState("");
   const [locationMarker, setLocationMarker] = useState(null);
   const [eventMarkers, setEventMarkers] = useState([]);
+  const [searchInput, setSearchInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
 
-  // Function to fetch coordinates from Google Maps API
   const fetchCoordinates = async (location) => {
     try {
       const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
@@ -41,14 +42,13 @@ const EventSearch = ({ searchQuery, locationQuery }) => {
     return null;
   };
 
-  // Date filter logic
   const filterByDate = (events, filter) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay()); // Start of this week
+    startOfWeek.setDate(today.getDate() - today.getDay());
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // End of this week
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
 
     switch (filter) {
       case "today":
@@ -61,9 +61,9 @@ const EventSearch = ({ searchQuery, locationQuery }) => {
         return events.filter(event => new Date(event.date) >= startOfWeek && new Date(event.date) <= endOfWeek);
       case "this weekend":
         const weekendStart = new Date(startOfWeek);
-        weekendStart.setDate(startOfWeek.getDate() + 5); // Friday
+        weekendStart.setDate(startOfWeek.getDate() + 5);
         const weekendEnd = new Date(startOfWeek);
-        weekendEnd.setDate(startOfWeek.getDate() + 6); // Sunday
+        weekendEnd.setDate(startOfWeek.getDate() + 6);
         return events.filter(event => new Date(event.date) >= weekendStart && new Date(event.date) <= weekendEnd);
       case "next week":
         const nextWeekStart = new Date(startOfWeek);
@@ -76,13 +76,12 @@ const EventSearch = ({ searchQuery, locationQuery }) => {
     }
   };
 
-  // Filter events and update map
-  useEffect(() => {
+  const handleSearch = async () => {
     let filtered = fakeEvents;
 
-    if (searchQuery) {
+    if (searchInput) {
       filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(searchQuery.toLowerCase())
+        event.title.toLowerCase().includes(searchInput.toLowerCase())
       );
     }
 
@@ -104,20 +103,23 @@ const EventSearch = ({ searchQuery, locationQuery }) => {
     if (filtered.length > 0) {
       setCoordinates({ lat: filtered[0].lat, lng: filtered[0].lng });
       setLocationMarker(null);
-    } else if (locationQuery) {
-      fetchCoordinates(locationQuery).then((coords) => {
-        if (coords) {
-          setCoordinates(coords);
-          setLocationMarker(coords);
-          setEventMarkers([]);
-        }
-      });
+    } else if (locationInput) {
+      const coords = await fetchCoordinates(locationInput);
+      if (coords) {
+        setCoordinates(coords);
+        setLocationMarker(coords);
+        setEventMarkers([]);
+      }
     } else {
       setCoordinates({ lat: 38.4404, lng: -122.7141 });
       setLocationMarker(null);
       setEventMarkers([]);
     }
-  }, [searchQuery, locationQuery, category, dateFilter, distanceFilter]);
+  };
+
+  useEffect(() => {
+    handleSearch(); // Automatically filter when filters change
+  }, [category, dateFilter, distanceFilter]);
 
   return (
     <div className="container mt-4">
@@ -126,7 +128,32 @@ const EventSearch = ({ searchQuery, locationQuery }) => {
         <div className="col-md-8">
           <h2>Upcoming Events</h2>
 
-          {/* FILTERS */}
+          {/* Search Bar */}
+          <div className="d-flex align-items-center mb-3 search-bar-container">
+            <input
+              type="text"
+              className="form-control me-2"
+              placeholder="Search events..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <input
+              type="text"
+              className="form-control me-2"
+              placeholder="Enter city or location..."
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+            />
+            <button
+              className="btn btn-danger"
+              style={{ height: "35px", padding: "6px 10px", fontSize: "14px" }}
+              onClick={handleSearch}
+            >
+              <FaSearch style={{ fontSize: "12px" }} />
+            </button>
+          </div>
+
+          {/* Filters */}
           <div className="d-flex mb-3 gap-3">
             <select className="form-select" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
               <option value="">Any Day</option>
@@ -156,7 +183,7 @@ const EventSearch = ({ searchQuery, locationQuery }) => {
             </select>
           </div>
 
-          {/* EVENT LIST */}
+          {/* Event List */}
           <div className="row">
             {filteredEvents.map((event) => (
               <div key={event.id} className="col-md-6 mb-4">
@@ -177,7 +204,11 @@ const EventSearch = ({ searchQuery, locationQuery }) => {
         {/* RIGHT SIDE - Google Map */}
         <div className="col-md-4">
           <div style={{ position: "sticky", top: "80px", height: "500px" }}>
-            <GoogleMapReact bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY }} center={coordinates} defaultZoom={12}>
+            <GoogleMapReact
+              bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY }}
+              center={coordinates}
+              defaultZoom={12}
+            >
               {eventMarkers.map((event, index) => (
                 <EventMarker key={index} lat={event.lat} lng={event.lng} text={event.title} />
               ))}
