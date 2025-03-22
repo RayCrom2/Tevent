@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import GoogleMapReact from "google-map-react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import fakeEvents from "../data/fakeEvents";
+import fakeEvents from "../Fakedata/fakeEvents";
 
 const EventMarker = ({ lat, lng, text }) => (
   <div style={{ color: "red", fontWeight: "bold", fontSize: "12px" }}>
