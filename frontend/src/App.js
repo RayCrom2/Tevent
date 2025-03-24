@@ -59,34 +59,30 @@ const App = () => {
 
 
   useEffect(() => {
+    if (!isAuthenticated || !user) return;
+  
+    console.log("🔥 Syncing user:", user);
+  
     const syncUser = async () => {
-      if (isAuthenticated && user) {
-        console.log("🛰️ Syncing user:", user);
-        console.log("🚀 Sync payload:", {
-          username: user?.nickname || user?.email,
-          email: user?.email,
-          picture: user?.picture,
-          sub: user?.sub,
+      try {
+        await fetch("http://localhost:5001/auth/sync-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: user.nickname || user.email,
+            email: user.email,
+            picture: user.picture,
+            sub: user.sub,
+          }),
         });
-        try {
-          await fetch("http://localhost:5001/auth/sync-user", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              username: user.nickname || user.email,
-              email: user.email,
-              picture: user.picture,
-              sub: user.sub, // auth0Id
-            }),
-          });
-        } catch (err) {
-          console.error("❌ Sync error:", err.message);
-        }
+      } catch (err) {
+        console.error("❌ Failed to sync user:", err.message);
       }
     };
   
     syncUser();
   }, [isAuthenticated, user]);
+  
 
   
 
