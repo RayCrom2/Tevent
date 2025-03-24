@@ -43,11 +43,12 @@ import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
-import Register from "./components/Register"; // ✅ import your new Register component
+import Register from "./components/Register"; 
 import './styles/styles.css';
+import { useEffect } from "react";
 
 const App = () => {
-  const { isAuthenticated } = useAuth0();
+  const { isAuthenticated, user } = useAuth0();
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
 
@@ -55,6 +56,39 @@ const App = () => {
     setSearchQuery(search);
     setLocationQuery(location);
   };
+
+
+  useEffect(() => {
+    const syncUser = async () => {
+      if (isAuthenticated && user) {
+        console.log("🛰️ Syncing user:", user);
+        console.log("🚀 Sync payload:", {
+          username: user?.nickname || user?.email,
+          email: user?.email,
+          picture: user?.picture,
+          sub: user?.sub,
+        });
+        try {
+          await fetch("http://localhost:5001/auth/sync-user", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: user.nickname || user.email,
+              email: user.email,
+              picture: user.picture,
+              sub: user.sub, // auth0Id
+            }),
+          });
+        } catch (err) {
+          console.error("❌ Sync error:", err.message);
+        }
+      }
+    };
+  
+    syncUser();
+  }, [isAuthenticated, user]);
+
+  
 
   return (
     <Router>
