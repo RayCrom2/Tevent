@@ -1,8 +1,7 @@
 
-require("dotenv").config({ path: "backend.env" });
+require("dotenv").config({ path: ".env" });
 console.log("✅ Loaded JWT_SECRET:", process.env.JWT_SECRET); // Debugging line
 const express = require("express");
-//const bcrypt = require("bcrypt");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
@@ -12,6 +11,8 @@ const router = express.Router();
 // Register a user
 router.post("/register", async (req, res) => {
     try {
+        console.log("📩 /auth/register hit!");
+
         const { username, password, dateOfBirth } = req.body;
 
         // Check if username exists
@@ -26,6 +27,7 @@ router.post("/register", async (req, res) => {
         await newUser.save();
 
         res.status(201).json({ message: "User created successfully" });
+        console.log("Register route hit!");
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -30,4 +30,4 @@ const UserSchema = new mongoose.Schema({
     pastEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
   });
-  module.exports = mongoose.model("User", UserSchema);
+  module.exports = mongoose.models.User || mongoose.model("User", UserSchema);

@@ -34,7 +34,6 @@
 
 // export default App;
 
-
 import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -44,6 +43,7 @@ import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
+import Register from "./components/Register"; // ✅ import your new Register component
 import './styles/styles.css';
 
 const App = () => {
@@ -64,6 +64,7 @@ const App = () => {
           <Route path="/profile" element={isAuthenticated ? <Profile /> : <h2>Please log in.</h2>} />
           <Route path="/events" element={<Events searchQuery={searchQuery} locationQuery={locationQuery} />} />
           <Route path="/about" element={<About />} />
+          <Route path="/register" element={<Register />} /> {/* ✅ new route for Register */}
           <Route path="*" element={<h2>Page Not Found</h2>} />
         </Routes>
       </Layout>

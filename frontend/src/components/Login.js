@@ -1,29 +1,37 @@
-import React from "react";
-import { useAuth0 } from "@auth0/auth0-react";
+import React, { useState } from "react";
+import { loginUser } from "../services/authService";
 
 const Login = () => {
-  const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const data = await loginUser(username, password);
+      console.log("✅ Logged in:", data);
+      // Optionally store token in localStorage
+      localStorage.setItem("token", data.token);
+    } catch (err) {
+      console.error("❌ Login error:", err.message);
+    }
+  };
 
   return (
-    <div className="container text-center mt-5">
-      <h2>{isAuthenticated ? `Welcome, ${user.name}` : "Welcome to Tevent"}</h2>
-
-      {isAuthenticated ? (
-        <div>
-          <img src={user.picture} alt="Profile" width="50" className="rounded-circle" />
-          <br />
-          <button
-            className="btn btn-danger mt-3"
-            onClick={() => logout({ returnTo: `${window.location.origin}/about` })}
-          >
-            Logout
-          </button>
-        </div>
-      ) : (
-        <button className="btn btn-primary mt-3" onClick={() => loginWithRedirect()}>
-          Login with Auth0
-        </button>
-      )}
+    <div>
+      <h2>Login to Tevent</h2>
+      <input
+        type="text"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      /><br/>
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      /><br/>
+      <button onClick={handleLogin}>Login</button>
     </div>
   );
 };
