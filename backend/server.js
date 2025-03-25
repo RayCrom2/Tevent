@@ -11,6 +11,10 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
+app.get('/', (req, res) => {
+    res.send(`Server running on port ${PORT}`);
+  });
+
 // Middleware
 app.use(express.json());
 app.use(cors());
