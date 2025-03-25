@@ -1,33 +1,44 @@
 const mongoose = require("mongoose");
 
-
 const UserSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    dateOfBirth: { type: Date },
-    role: {
-      type: String,
-      enum: ['user', 'moderator', 'admin'],
-      default: 'user'
-    },
-    CreateEventPermission: {
-      type: Boolean,
-      default: false,
-      required: true
-    },
-    isBanned: {
-      type: Boolean,
-      default: false
-    },
-    eventLimit: {
-      type: Number,
-      default: 5
-    },
-    lastEventCreatedAt: {
-      type: Date
-    },
-    eventsGoing: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
-    pastEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
-    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
-  });
-  module.exports = mongoose.model("User", UserSchema);
+  auth0Id: { type: String, unique: true, sparse: true }, // e.g. 'google-oauth2|abc123'
+  email: { type: String, unique: true, sparse: true },
+  username: { type: String, required: true, unique: true },
+  picture: { type: String },
+
+  // Optional if using Auth0
+  password: { type: String, default: "auth0" }, // for legacy/fallback only
+
+  dateOfBirth: { type: Date }, // optional — you can update this later via form
+
+  role: {
+    type: String,
+    enum: ['user', 'moderator', 'admin'],
+    default: 'user'
+  },
+
+  CreateEventPermission: {
+    type: Boolean,
+    default: false,
+    required: true
+  },
+
+  isBanned: {
+    type: Boolean,
+    default: false
+  },
+
+  eventLimit: {
+    type: Number,
+    default: 5
+  },
+
+  lastEventCreatedAt: { type: Date },
+
+  eventsGoing: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
+  pastEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+});
+
+// Safe export for dev environments
+module.exports = mongoose.models.User || mongoose.model("User", UserSchema);
