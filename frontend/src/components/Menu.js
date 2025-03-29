@@ -12,6 +12,7 @@ const Menu = ({ onLogout }) => {
                     <li><button onClick={() => navigate("/home")}>Home</button></li>
                     <li><button onClick={() => navigate("/profile")}>Profile</button></li>
                     <li><button onClick={() => navigate("/events")}>Events</button></li>
+                    <li><button onClick={() => navigate("/calander")}>Calander</button></li>
                     <li><button onClick={onLogout}>Logout</button></li>
                 </ul>
             </nav>

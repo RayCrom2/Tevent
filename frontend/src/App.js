@@ -46,6 +46,7 @@ import About from "./pages/About";
 import Register from "./components/Register"; 
 import './styles/styles.css';
 import { useEffect } from "react";
+import Calander from "./pages/Calander";
 
 const App = () => {
   const { isAuthenticated, user } = useAuth0();
@@ -95,6 +96,7 @@ const App = () => {
           <Route path="/events" element={<Events searchQuery={searchQuery} locationQuery={locationQuery} />} />
           <Route path="/about" element={<About />} />
           <Route path="/register" element={<Register />} /> {/* ✅ new route for Register */}
+          <Route path="/calander" element={<Calander /> }/>/* ✅ new route for Register */}
           <Route path="*" element={<h2>Page Not Found</h2>} />
         </Routes>
       </Layout>
