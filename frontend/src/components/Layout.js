@@ -20,6 +20,9 @@ function Layout({ children }) {
               <Nav.Link as={Link} to="/events">Events</Nav.Link>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
               <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
+
+              {/* ✅ Show Login or Logout dynamically */}
+              <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
               {isAuthenticated ? (
                 <Nav.Link onClick={() => logout({ returnTo: `https://${codespaceUrlWithoutProtocol}/` })}>
                   Logout
