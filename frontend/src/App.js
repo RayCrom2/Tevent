@@ -8,6 +8,7 @@ import Events from "./pages/Events";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
 import Register from "./components/Register"; 
+import Calendar from "./pages/Calendar";
 import './styles/styles.css';
 import { useEffect } from "react";
 import "./App.css";
@@ -59,6 +60,7 @@ const App = () => {
           <Route path="/events" element={<Events searchQuery={searchQuery} locationQuery={locationQuery} />} />
           <Route path="/about" element={<About />} />
           <Route path="/register" element={<Register />} /> {/* ✅ new route for Register */}
+          <Route path="/calendar" element={<Calendar /> }/> {/* ✅ new route for Register */}
           <Route path="*" element={<h2>Page Not Found</h2>} />
         </Routes>
       </Layout>
