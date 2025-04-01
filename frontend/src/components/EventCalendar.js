@@ -5,6 +5,7 @@ import "@schedule-x/theme-default/dist/calendar.css";
 
 function EventCalendar() {
     const currentDate = new Date().toISOString().split('T')[0];
+    
     const calendar = useCalendarApp({
         views: [
             createViewWeek(),
