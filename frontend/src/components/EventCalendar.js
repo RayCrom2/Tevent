@@ -3,7 +3,7 @@ import{ScheduleXCalendar,useCalendarApp} from "@schedule-x/react";
 import {createViewWeek,createViewMonthGrid} from '@schedule-x/calendar'
 import '@schedule-x/theme-default/dist/calendar.css'
 
-function EventCalander(){
+function EventCalendar(){
     const calendar = useCalendarApp( {
         views: [
             createViewWeek(),
@@ -27,4 +27,4 @@ function EventCalander(){
      </>
     )
 }
-export default EventCalander;
+export default EventCalendar;

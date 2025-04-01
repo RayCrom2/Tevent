@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { registerUser } from "../services/authService"; // ✅ make sure this path is correct
+import { registerAdmin } from "../services/authService"; // ✅ make sure this path is correct
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -9,8 +9,8 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      console.log("📤 Calling registerUser()");
-      const data = await registerUser(username, password, dateOfBirth);
+      console.log("📤 Calling registerAdmin()");
+      const data = await registerAdmin(username, password, dateOfBirth);
       console.log("✅ Registered:", data);
       setMessage("✅ Registration successful!");
     } catch (err) {
