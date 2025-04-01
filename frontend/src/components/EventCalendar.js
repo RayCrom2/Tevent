@@ -4,6 +4,7 @@ import { createViewWeek, createViewMonthGrid } from "@schedule-x/calendar";
 import "@schedule-x/theme-default/dist/calendar.css";
 
 function EventCalendar() {
+    const currentDate = new Date().toISOString().split('T')[0];
     const calendar = useCalendarApp({
         views: [
             createViewWeek(),
@@ -17,7 +18,7 @@ function EventCalendar() {
                 end: "2025-03-30"
             }
         ],
-        selectedDate: "2025-01-01"
+        selectedDate: currentDate
     });
 
     return (
