@@ -70,7 +70,7 @@ const UserLocationMap = () => {
 
   return (
     <div>
-      <h2>Live Location Tracking</h2>
+     {/* <h2>Live Location Tracking</h2>*/}
       {location.error ? (
         <p>Error: {location.error}</p>
       ) : location.lat && location.lng ? (

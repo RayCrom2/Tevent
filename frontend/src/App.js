@@ -12,6 +12,9 @@ import './styles/styles.css';
 import { useEffect } from "react";
 import Calendar from "./pages/Calendar";
 
+import UserProfile from "./components/UserProfile";
+
+
 const App = () => {
   const { isAuthenticated, user } = useAuth0();
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,7 +33,8 @@ const App = () => {
   
     const syncUser = async () => {
       try {
-        await fetch("http://localhost:5001/auth/sync-user", {
+       // await fetch("http://localhost:5001/auth/sync-user", {
+          await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/sync-user`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -54,7 +58,8 @@ const App = () => {
       <Layout onSearch={handleSearch}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/profile" element={isAuthenticated ? <Profile /> : <h2>Please log in to see this page.</h2>} />
+         {/* <Route path="/profile" element={isAuthenticated ? <Profile /> : <h2>Please log in to see this page.</h2>} />*/}
+          <Route path="/profile/:username" element={isAuthenticated ? <UserProfile /> : <h2>Please log in to see this page.</h2>} />
           <Route path="/events" element={<Events searchQuery={searchQuery} locationQuery={locationQuery} />} />
           <Route path="/about" element={<About />} />
           <Route path="/register" element={<Register />} /> {/* ✅ new route for Register */}

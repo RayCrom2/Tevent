@@ -1,0 +1,105 @@
+:root {
+  --card-bg: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-muted: #6a6a6a;
+  --linkedin-blue: #0a66c2;
+}
+
+.linkedin-profile-wrapper {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif;
+  background-color: #f3f2ef;
+  padding-bottom: 3rem;
+  min-height: 100vh;
+}
+
+/* Top banner */
+.linkedin-banner {
+  width: 100%;
+  height: 240px;
+  background-image: url("https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1600&q=80");
+  background-position: center;
+  background-size: cover;
+  position: relative;
+}
+
+/* Avatar floating overlapping bottom center */
+.linkedin-avatar-wrapper {
+  position: absolute;
+  bottom: -64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.linkedin-avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 5px solid white;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Profile card below avatar */
+.linkedin-card {
+  background: var(--card-bg);
+  margin: 80px auto 24px;
+  max-width: 800px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+}
+
+.linkedin-card h2 {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.linkedin-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.linkedin-location {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.linkedin-location a {
+  color: var(--linkedin-blue);
+  text-decoration: none;
+}
+
+.linkedin-location a:hover {
+  text-decoration: underline;
+}
+
+.linkedin-username,
+.linkedin-email {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+/* Location section */
+.location-section {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Auth fallback */
+.auth-warning {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: #a33;
+}

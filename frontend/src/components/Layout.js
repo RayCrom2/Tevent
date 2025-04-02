@@ -5,7 +5,8 @@ import { useAuth0 } from "@auth0/auth0-react"; // ✅ Import Auth0 hook
 import 'bootstrap/dist/css/bootstrap.min.css'; // import Bootstrap CSS
 
 function Layout({ children }) {
-  const { loginWithRedirect, logout, isAuthenticated } = useAuth0(); // ✅ Get auth state
+  //const { loginWithRedirect, logout, isAuthenticated } = useAuth0(); // ✅ Get auth state
+  const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
 
   return (
     <div>
@@ -16,7 +17,9 @@ function Layout({ children }) {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
+              {/*<Nav.Link as={Link} to="/profile">Profile</Nav.Link>*/}
+              <Nav.Link as={Link} to={`/profile/${user?.nickname || "me"}`}>Profile</Nav.Link>
+
               <Nav.Link as={Link} to="/events">Events</Nav.Link>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
               <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
