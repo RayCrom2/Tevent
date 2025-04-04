@@ -1,12 +1,14 @@
 import React from 'react';
 import { Container, Navbar, Nav } from 'react-bootstrap';
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react"; // ✅ Import Auth0 hook
 import 'bootstrap/dist/css/bootstrap.min.css'; // import Bootstrap CSS
 
 function Layout({ children }) {
   //const { loginWithRedirect, logout, isAuthenticated } = useAuth0(); // ✅ Get auth state
   const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
+  const location= useLocation();
+  const isProfilePage = location.pathname.startsWith("/profile/");
 
   return (
     <div>
@@ -38,9 +40,14 @@ function Layout({ children }) {
       </Navbar>
 
       {/* Main Content */}
+      {isProfilePage && isAuthenticated ? (
+          <div className="profile-page-wrapper">{children}</div>
+      ) : (
+
       <Container className="my-4">
         {children}
       </Container>
+      )}
 
       {/* Footer */}
       <footer style={{ backgroundColor: "#000000" }} className="py-2 mt-auto">
@@ -53,4 +60,5 @@ function Layout({ children }) {
 }
 
 export default Layout;
+
 

@@ -1,234 +1,186 @@
-// import React, { useState } from "react";
-// import { useParams } from "react-router-dom";
-// import { useAuth0 } from "@auth0/auth0-react";
-// import UserLocationMap from "./UserLocationMap";
-// import "../styles/UserProfile.css";
+import React, { useState, useEffect } from "react";
+import { Container } from "react-bootstrap";
+import useUserProfile from "../hooks/useUserProfile";
+import UserLocationMap from "./UserLocationMap";
+import "../styles/UserProfile.css";
 
-// const UserProfile = () => {
-//   const { username } = useParams();
-//   const { user, isAuthenticated } = useAuth0();
-
-//   const [profilePic, setProfilePic] = useState(user?.picture || "/default-avatar.png");
-//   const [bannerPic, setBannerPic] = useState("https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1600&q=80");
-//   const [showModal, setShowModal] = useState(false);
-
-//   const handleProfilePicChange = (e) => {
-//     const file = e.target.files[0];
-//     if (file) setProfilePic(URL.createObjectURL(file));
-//     setShowModal(false);
-//   };
-
-//   const handleBannerPicChange = (e) => {
-//     const file = e.target.files[0];
-//     if (file) setBannerPic(URL.createObjectURL(file));
-//   };
-
-//   const handleAvatarClick = () => {
-//     setShowModal(true);
-//   };
-
-//   const closeModal = () => {
-//     setShowModal(false);
-//   };
-
-//   if (!isAuthenticated || !user) {
-//     return <p className="auth-warning">Please log in to view your profile.</p>;
-//   }
-
-//   return (
-//     <div className="linkedin-profile-wrapper">
-//       {/* Banner */}
-//       <div
-//         className="linkedin-banner"
-//         style={{ backgroundImage: `url(${bannerPic})` }}
-//       >
-//         <label className="upload-banner-label">
-//           📸 Change background
-//           <input type="file" accept="image/*" onChange={handleBannerPicChange} hidden />
-//         </label>
-
-//         {/* Avatar */}
-//         <div className="linkedin-avatar-wrapper" onClick={handleAvatarClick}>
-//           <img
-//             className="linkedin-avatar"
-//             src={profilePic}
-//             alt={`Avatar of ${user.name}`}
-//           />
-//         </div>
-//       </div>
-
-//       {/* Profile Card */}
-//       <div className="linkedin-card">
-//         <h2>{user.name}</h2>
-//         <p className="linkedin-username">@{username}</p>
-//         {/*<p className="linkedin-email">📧 {user.email}</p>*/}
-//       </div>
-
-//       {/* Location Map */}
-//       <div className="location-section">
-//         <h3>Live Location Tracking</h3>
-//         <UserLocationMap />
-//       </div>
-
-//       {/* Profile Image Modal */}
-//       {showModal && (
-//         <div className="profile-modal-backdrop" onClick={closeModal}>
-//           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-//             <h3>Profile Photo</h3>
-//             <img className="modal-avatar" src={profilePic} alt="Current avatar" />
-
-//             <div className="profile-modal-actions">
-//               <label className="modal-button">
-//                 📸 Add Photo
-//                 <input type="file" accept="image/*" onChange={handleProfilePicChange} hidden />
-//               </label>
-//               <button className="modal-button">✨ Frames</button>
-//               <button className="modal-button">✏️ Edit</button>
-//               <button
-//                 className="modal-button delete"
-//                 onClick={() => {
-//                   setProfilePic("/default-avatar.png");
-//                   setShowModal(false);
-//                 }}
-//               >
-//                 🗑️ Delete
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default UserProfile;
-
-
-// Import necessary React hooks and modules
-import React, { useState } from "react";
-import { useParams } from "react-router-dom"; // Used to extract dynamic route params (e.g., /profile/:username)
-import { useAuth0 } from "@auth0/auth0-react"; // Provides authentication context via Auth0
-import UserLocationMap from "./UserLocationMap"; // Custom component to show user location
-import "../styles/UserProfile.css"; // Import associated CSS styles
-
-// Define the UserProfile functional component
+// UserProfile component displays and allows editing of user info like avatar, banner, name, username, bio, and contact info.
 const UserProfile = () => {
-  // Extract username from the URL (/profile/:username)
-  const { username } = useParams();
+  const { profileData, loading, isAuthenticated } = useUserProfile();
 
-  // Destructure user info and auth state from Auth0
-  const { user, isAuthenticated } = useAuth0();
-
-  // State to manage the displayed profile picture (defaults to user's Auth0 picture or a default image)
-  const [profilePic, setProfilePic] = useState(user?.picture || "/default-avatar.png");
-
-  // State to manage the banner background image
-  const [bannerPic, setBannerPic] = useState(
-    "https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1600&q=80"
-  );
-
-  // State to toggle the visibility of the profile picture options modal
+  // State variables to manage editable user information
+  const [profilePic, setProfilePic] = useState("");
+  const [bannerPic, setBannerPic] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [editableName, setEditableName] = useState("");
+  const [editableUsername, setEditableUsername] = useState("");
+  const [bio, setBio] = useState("");
+  const [contact, setContact] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  // When user selects a new profile picture
+  // Load saved data from localStorage or fallback to profileData
+  useEffect(() => {
+    if (profileData) {
+      const savedBanner = localStorage.getItem("bannerPic");
+      const savedProfile = localStorage.getItem("profilePic");
+      const savedBio = localStorage.getItem("bio");
+      const savedContact = localStorage.getItem("contact");
+      const savedName = localStorage.getItem("name");
+      const savedUsername = localStorage.getItem("username");
+
+      setBannerPic(savedBanner || profileData.bannerPic);
+      setProfilePic(savedProfile || profileData.profilePic);
+      setBio(savedBio || profileData.bio);
+      setContact(savedContact || profileData.contact);
+      setEditableName(savedName || profileData.name);
+      setEditableUsername(savedUsername || profileData.username);
+    }
+  }, [profileData]);
+
+  // Handle when user selects a new profile picture
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Create a temporary URL for the selected image and set it as the new profile picture
-      setProfilePic(URL.createObjectURL(file));
+      const newPic = URL.createObjectURL(file);
+      setProfilePic(newPic);
+      localStorage.setItem("profilePic", newPic);
     }
-    // Close the modal after uploading
     setShowModal(false);
   };
 
-  // When user selects a new background/banner image
+  // Handle when user selects a new banner image
   const handleBannerPicChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Set the background to the selected image
-      setBannerPic(URL.createObjectURL(file));
+      const newBanner = URL.createObjectURL(file);
+      setBannerPic(newBanner);
+      localStorage.setItem("bannerPic", newBanner);
     }
   };
 
-  // Open the modal when the avatar is clicked
-  const handleAvatarClick = () => {
-    setShowModal(true);
+  // Open profile picture modal
+  const handleAvatarClick = () => setShowModal(true);
+
+  // Close profile picture modal
+  const closeModal = () => setShowModal(false);
+
+  // Save edited bio, contact, name, and username to localStorage
+  const handleSave = () => {
+    localStorage.setItem("bio", bio);
+    localStorage.setItem("contact", contact);
+    localStorage.setItem("name", editableName);
+    localStorage.setItem("username", editableUsername);
+    setIsEditing(false);
   };
 
-  // Close the modal when clicking outside it
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  // If the user is not authenticated, show a warning message
-  if (!isAuthenticated || !user) {
+  // Guard clause: Don't show profile if user isn't logged in
+  if (!isAuthenticated || !profileData) {
     return <p className="auth-warning">Please log in to view your profile.</p>;
   }
 
-  // JSX to render the user profile page
+  // Loading state
+  if (loading) return <p>Loading profile...</p>;
+
   return (
-    <div className="linkedin-profile-wrapper">
-      {/* Top banner section with upload button */}
-      <div
-        className="linkedin-banner"
-        style={{ backgroundImage: `url(${bannerPic})` }}
-      >
-        {/* Upload new background image */}
-        <label className="upload-banner-label">
-          📸 Change background
-          <input type="file" accept="image/*" onChange={handleBannerPicChange} hidden />
-        </label>
-
-        {/* Avatar (clickable to open modal) */}
-        <div className="linkedin-avatar-wrapper" onClick={handleAvatarClick}>
-          <img
-            className="linkedin-avatar"
-            src={profilePic}
-            alt={`Avatar of ${user.name}`}
-          />
+    <>
+      {/* Banner section with avatar */}
+      <Container fluid className="p-0 m-0">
+        <div
+          className="profile-banner"
+          style={{ backgroundImage: `url(${bannerPic})` }}
+        >
+          <label className="upload-banner-label">
+            📸 Change background
+            <input type="file" accept="image/*" onChange={handleBannerPicChange} hidden />
+          </label>
+          <div className="profile-avatar-wrapper" onClick={handleAvatarClick}>
+            <img className="profile-avatar" src={profilePic} alt={`Avatar of ${editableName}`} />
+          </div>
         </div>
-      </div>
+      </Container>
 
-      {/* User info card */}
-      <div className="linkedin-card">
-        <h2>{user.name}</h2>
-        <p className="linkedin-username">@{username}</p>
-        {/* Optional email field (commented out) */}
-        {/*<p className="linkedin-email">📧 {user.email}</p>*/}
-      </div>
+      {/* Profile Info Section */}
+      <Container className="profile-wrapper">
+        <div className="profile-card">
+          {/* Editable name and username */}
+          {isEditing ? (
+            <>
+              <input
+                type="text"
+                value={editableName}
+                onChange={(e) => setEditableName(e.target.value)}
+                className="form-control my-2"
+                placeholder="Your full name"
+              />
+              <input
+                type="text"
+                value={editableUsername}
+                onChange={(e) => setEditableUsername(e.target.value)}
+                className="form-control my-2"
+                placeholder="Your username"
+              />
+            </>
+          ) : (
+            <>
+              <h2>{editableName}</h2>
+              <p className="profile-username">@{editableUsername}</p>
+            </>
+          )}
 
-      {/* Live location tracking using a custom map component */}
-      <div className="location-section">
-        <h3>Live Location Tracking</h3>
-        <UserLocationMap />
-      </div>
+          {/* Editable bio and contact info */}
+          {isEditing ? (
+            <>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={3}
+                className="form-control my-2"
+                placeholder="Enter your bio"
+              />
+              <input
+                type="email"
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                className="form-control my-2"
+                placeholder="Contact email"
+              />
+              <button onClick={handleSave} className="modal-button my-2">💾 Save</button>
+            </>
+          ) : (
+            <>
+              <p>{bio}</p>
+              <a href={`mailto:${contact}`}><span role="img" aria-label="mail">📧</span> {contact}</a>
+              <br />
+              <button onClick={() => setIsEditing(true)} className="modal-button my-2">✏️ Edit Profile Biography</button>
+            </>
+          )}
+        </div>
 
-      {/* Modal that appears when clicking on the avatar */}
+        {/* Map section */}
+        <div className="location-section">
+          <h3>Live Location Tracking</h3>
+          <UserLocationMap />
+        </div>
+      </Container>
+
+      {/* Avatar Modal with photo tools */}
       {showModal && (
         <div className="profile-modal-backdrop" onClick={closeModal}>
-          {/* Prevent modal from closing when clicking inside the modal */}
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
             <h3>Profile Photo</h3>
-            {/* Display the current profile picture inside the modal */}
             <img className="modal-avatar" src={profilePic} alt="Current avatar" />
-
-            {/* Modal buttons for profile photo actions */}
             <div className="profile-modal-actions">
-              {/* Upload a new photo */}
               <label className="modal-button">
                 📸 Add Photo
                 <input type="file" accept="image/*" onChange={handleProfilePicChange} hidden />
               </label>
-
-              {/* Placeholder for future features (Frames and Edit) */}
               <button className="modal-button">✨ Frames</button>
               <button className="modal-button">✏️ Edit</button>
-
-              {/* Delete photo and reset to default */}
               <button
                 className="modal-button delete"
                 onClick={() => {
                   setProfilePic("/default-avatar.png");
+                  localStorage.removeItem("profilePic");
                   setShowModal(false);
                 }}
               >
@@ -238,7 +190,7 @@ const UserProfile = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
