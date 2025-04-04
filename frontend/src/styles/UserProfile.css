@@ -1,32 +1,29 @@
+/* Root CSS variables used throughout the profile for theme consistency */
 :root {
   --card-bg: #ffffff;
   --text-primary: #1a1a1a;
   --text-muted: #6a6a6a;
-  --linkedin-blue: #0a66c2;
+  --primary-blue: #0a66c2;
 }
 
-.linkedin-profile-wrapper {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif;
-  background-color: #f3f2ef;
-  padding-bottom: 3rem;
-  min-height: 100vh;
-}
-
-/* Top banner */
-.linkedin-banner {
+/* Styles the user's top banner background image on the profile */
+.profile-banner {
   width: 100%;
-  height: 240px;
-  background-position: center;
-  background-size: cover;
+  aspect-ratio: 3 / 1; /* Maintains a wide banner shape */
+  background-position: center center;
+  background-size: cover; /* Best for scenic images */
+  background-repeat: no-repeat;
+  background-color: #ccc; /* fallback color */
   position: relative;
   display: flex;
   justify-content: center;
   align-items: flex-end;
   padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-/* Avatar floating overlapping bottom center */
-.linkedin-avatar-wrapper {
+/* Container for the profile avatar floating at the bottom of the banner */
+.profile-avatar-wrapper {
   position: absolute;
   bottom: -64px;
   left: 50%;
@@ -36,7 +33,8 @@
   cursor: pointer;
 }
 
-.linkedin-avatar {
+/* Styles for the user's circular profile image with shadow and border */
+.profile-avatar {
   width: 130px;
   height: 130px;
   border-radius: 50%;
@@ -45,71 +43,53 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Profile card below avatar */
-.linkedin-card {
+/* Wrapper for the entire profile content area including cards and layout */
+.profile-wrapper {
+  width: 100%;
+  max-width: 100vw;
+  background-color: #f3f2ef;
+  padding-top: 5rem;
+  padding-bottom: 3rem;
+  margin: 0;
+  overflow-x: hidden; /* Just in case there's overflow */
+}
+/* Card container for displaying user's name and username */
+.profile-card {
   background: var(--card-bg);
-  margin: 80px auto 24px;
   max-width: 800px;
+  margin: 0 auto 24px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 2rem;
   text-align: center;
 }
 
-.linkedin-card h2 {
+/* Styles for user's name inside the profile card */
+.profile-card h2 {
   font-size: 1.75rem;
   margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
 
-.linkedin-title {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 0.25rem;
-}
-
-.linkedin-location {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  margin-bottom: 0.75rem;
-}
-
-.linkedin-location a {
-  color: var(--linkedin-blue);
-  text-decoration: none;
-}
-
-.linkedin-location a:hover {
-  text-decoration: underline;
-}
-
-.linkedin-username,
-.linkedin-email {
+/* Styles for username and email under the user's name */
+.profile-username,
+.profile-email {
   font-size: 0.95rem;
   color: var(--text-muted);
   margin-bottom: 0.25rem;
 }
 
-/* Location section */
+/* Section that shows the live location map styled like a profile card */
 .location-section {
   background: var(--card-bg);
+  max-width: 800px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   padding: 2rem;
-  max-width: 800px;
   margin: 0 auto;
 }
 
-/* Auth fallback */
-.auth-warning {
-  text-align: center;
-  margin-top: 2rem;
-  font-size: 1.2rem;
-  color: #a33;
-}
-
-/* Upload banner label */
+/* Label for uploading and changing the banner background image */
 .upload-banner-label {
   position: absolute;
   top: 12px;
@@ -123,11 +103,20 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Hides the native file input inside the upload label */
 .upload-banner-label input {
   display: none;
 }
 
-/* Modal styles */
+/* Message displayed when user is not authenticated */
+.auth-warning {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: #a33;
+}
+
+/* Dark backdrop behind the profile modal window */
 .profile-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -138,6 +127,7 @@
   align-items: center;
 }
 
+/* Modal box styling for editing or updating the avatar */
 .profile-modal {
   background: white;
   padding: 2rem;
@@ -148,6 +138,7 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* Styles for the avatar image inside the modal */
 .modal-avatar {
   width: 120px;
   height: 120px;
@@ -157,14 +148,16 @@
   border: 4px solid #ddd;
 }
 
+/* Wrapper for all buttons inside the profile modal */
 .profile-modal-actions {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
+/* Styles for all buttons inside the profile modal */
 .modal-button {
-  background-color: var(--linkedin-blue);
+  background-color: var(--primary-blue);
   color: white;
   border: none;
   padding: 0.6rem 1rem;
@@ -174,14 +167,56 @@
   transition: background 0.2s ease;
 }
 
+/*Editable Bio & Contact Inputs*/
+textarea.form-control,
+input.form-control {
+  font-size: 1rem;
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+
+/* Hover effect for regular modal buttons */
 .modal-button:hover {
   background-color: #004182;
 }
 
+/* Red variant of the modal button used for deleting avatar */
 .modal-button.delete {
   background-color: #d9534f;
 }
 
+/* Hover effect for delete button */
 .modal-button.delete:hover {
   background-color: #c9302c;
+}
+
+/* Responsive styles for mobile view */
+@media (max-width: 768px) {
+  /* Smaller profile avatar on mobile */
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  /* Shorter banner on mobile screens */
+  .profile-banner {
+    height: 180px;
+    margin-top: 0;
+  }
+
+  /* Consistent spacing for content wrapper on mobile */
+  .profile-wrapper {
+    padding-top: 5rem;
+  }
+}
+
+/* Prevents horizontal scrolling from full-width components */
+body {
+  margin: 0;
+  padding: 0;
 }
