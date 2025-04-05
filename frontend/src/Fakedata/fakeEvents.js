@@ -1,12 +1,12 @@
 const fakeEvents = [
     //Music Events
-    { id: 1, title: "Outside Lands Music Festival", date: "2025-03-26", location: "San Francisco, CA", description: "A major music festival featuring top artists.", category: "Music", lat: 37.7694, lng: -122.4862, distance: 5 },
-    { id: 2, title: "Monterey Jazz Festival", date: "2025-03-27", location: "Monterey, CA", description: "A world-class jazz festival.", category: "Music", lat: 36.6002, lng: -121.8947, distance: 50 },
-    { id: 3, title: "BottleRock Napa Valley", date: "2025-03-28", location: "Napa, CA", description: "A music, wine, and culinary festival.", category: "Music", lat: 38.2975, lng: -122.2869, distance: 25 },
+    { id: 1, title: "Outside Lands Music Festival", date: "2025-04-02", location: "San Francisco, CA", description: "A major music festival featuring top artists.", category: "Music", lat: 37.7694, lng: -122.4862, distance: 5 },
+    { id: 2, title: "Monterey Jazz Festival", date: "2025-04-05", location: "Monterey, CA", description: "A world-class jazz festival.", category: "Music", lat: 36.6002, lng: -121.8947, distance: 50 },
+    { id: 3, title: "BottleRock Napa Valley", date: "2025-04-7", location: "Napa, CA", description: "A music, wine, and culinary festival.", category: "Music", lat: 38.2975, lng: -122.2869, distance: 25 },
     { id: 14, title: "Latin Dance Night", date: "2025-06-30", location: "San Francisco, CA", description: "A vibrant Latin dance night featuring salsa, bachata, and merengue.", category: "Music", lat: 37.7749, lng: -122.4194, distance: 5 },
   
     //Music Event for Today
-    { id: 15, title: "Live Jazz Evening", date: "2025-03-29", location: "Santa Rosa, CA", description: "A relaxing jazz night with local artists.", category: "Music", lat: 38.4404, lng: -122.7141, distance: 5 },
+    { id: 15, title: "Live Jazz Evening", date: "2025-04-10", location: "Santa Rosa, CA", description: "A relaxing jazz night with local artists.", category: "Music", lat: 38.4404, lng: -122.7141, distance: 5 },
   
     //Added Business Event for Tomorrow
     { id: 16, title: "Startup Networking Mixer", date: "2025-03-30", location: "San Jose, CA", description: "Meet fellow entrepreneurs and investors.", category: "Business", lat: 37.3382, lng: -121.8863, distance: 10 },
