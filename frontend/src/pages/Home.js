@@ -1,10 +1,10 @@
 import React from "react";
+import Slideshow from "../components/Slideshow";
 
 const Home = () => {
   return (
     <div>
-      <h1>Home Page</h1>
-      <p>Welcome to the Home Page!</p>
+      <Slideshow /> {/* Add the Slideshow component here */}
     </div>
   );
 };
