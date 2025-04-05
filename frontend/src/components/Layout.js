@@ -9,6 +9,8 @@ function Layout({ children }) {
   const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
   const location= useLocation();
   const isProfilePage = location.pathname.startsWith("/profile/");
+  const currentUrl = window.location.href;
+
 
   return (
     <div>
@@ -18,17 +20,13 @@ function Layout({ children }) {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              {/*<Nav.Link as={Link} to="/profile">Profile</Nav.Link>*/}
               <Nav.Link as={Link} to={`/profile/${user?.nickname || "me"}`}>Profile</Nav.Link>
-
               <Nav.Link as={Link} to="/events">Events</Nav.Link>
-              <Nav.Link as={Link} to="/about">About</Nav.Link>
               <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
-
-              {/* ✅ Show Login or Logout dynamically */}
-              <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
+              {/* <Nav.Link as={Link} to="/about">About</Nav.Link> */}
+              
               {isAuthenticated ? (
-                <Nav.Link onClick={() => logout({ returnTo: `https://${codespaceUrlWithoutProtocol}/` })}>
+                <Nav.Link onClick={() => logout({ returnTo: {currentUrl} })}>
                   Logout
                 </Nav.Link>
               ) : (

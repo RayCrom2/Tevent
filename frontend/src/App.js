@@ -11,15 +11,8 @@ import Register from "./components/Register";
 import Calendar from "./pages/Calendar";
 import './styles/styles.css';
 import { useEffect } from "react";
-<<<<<<< HEAD
-import Calendar from "./pages/Calendar";
 import "./App.css";
-
-
 import UserProfile from "./components/UserProfile";
-=======
-import "./App.css";
->>>>>>> fc02577 (Added slideshow with two slides, still need to add and polish)
 
 
 const App = () => {
@@ -40,7 +33,6 @@ const App = () => {
   
     const syncUser = async () => {
       try {
-       // await fetch("http://localhost:5001/auth/sync-user", {
           await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/sync-user`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -70,7 +62,6 @@ const App = () => {
           <Route path="/events" element={<Events searchQuery={searchQuery} locationQuery={locationQuery} />} />
           <Route path="/about" element={<About />} />
           <Route path="/register" element={<Register />} /> {/* ✅ new route for Register */}
-          <Route path="/calendar" element={<Calendar /> }/> {/* ✅ new route for Register */}
           <Route path="/calendar" element={<Calendar /> }/> {/* ✅ new route for Register */}
           <Route path="*" element={<h2>Page Not Found</h2>} />
         </Routes>

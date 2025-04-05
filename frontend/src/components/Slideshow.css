@@ -1,8 +1,9 @@
 .slideshow-container {
   width: 100%;
-  max-width: 800px;
+  height: 775px; /* Example fixed height */
   margin: auto;
   position: relative;
+  overflow: hidden; /* Hides parts of the image that might overflow */
 }
 
 .slideshow-container img {
@@ -13,27 +14,23 @@
 
 .overlay-text {
   position: absolute;
-  top: 20%; /* Adjust based on design */
+  top: 74%;
   left: 50%;
   transform: translateX(-50%);
-  color: rgb(236, 11, 11);
   font-size: 24px;
   text-align: center;
-}
-
-.overlay-button {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
+  color: white; /* Choose a color that contrasts well with your image */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Horizontal shadow, vertical shadow, blur radius, color */
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+  padding: 5px 10px; /* Padding around the text */
+  border-radius: 5px; /* Optional: rounded corners */
 }
 
 .slideshow-container .slide {
-  position: relative; /* This is crucial for absolute positioning of children */
+  position: relative; /* Needed for absolute positioning of children */
 }
 
+.overlay-text a.overlay-link {
+  color: #007bff;  /* Example: Bootstrap's default link color*/
+  text-decoration: underline;  /*Makes it clear it's clickable*/
+}
