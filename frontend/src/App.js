@@ -11,11 +11,15 @@ import Register from "./components/Register";
 import Calendar from "./pages/Calendar";
 import './styles/styles.css';
 import { useEffect } from "react";
+<<<<<<< HEAD
 import Calendar from "./pages/Calendar";
 import "./App.css";
 
 
 import UserProfile from "./components/UserProfile";
+=======
+import "./App.css";
+>>>>>>> fc02577 (Added slideshow with two slides, still need to add and polish)
 
 
 const App = () => {
