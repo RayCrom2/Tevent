@@ -11,7 +11,7 @@ import Register from "./components/Register";
 import Calendar from "./pages/Calendar";
 import './styles/styles.css';
 import { useEffect } from "react";
-import "./App.css";
+import "./App.css
 import UserProfile from "./components/UserProfile";
 
 
@@ -33,6 +33,7 @@ const App = () => {
   
     const syncUser = async () => {
       try {
+
           await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/sync-user`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
