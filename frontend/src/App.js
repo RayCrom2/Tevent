@@ -11,7 +11,7 @@ import Register from "./components/Register";
 import Calendar from "./pages/Calendar";
 import './styles/styles.css';
 import { useEffect } from "react";
-import "./App.css
+import "./App.css"
 import UserProfile from "./components/UserProfile";
 
 
