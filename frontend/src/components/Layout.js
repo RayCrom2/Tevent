@@ -9,8 +9,6 @@ function Layout({ children }) {
   const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
   const location= useLocation();
   const isProfilePage = location.pathname.startsWith("/profile/");
-  const currentUrl = window.location.href;
-
 
   return (
     <div>
@@ -27,7 +25,7 @@ function Layout({ children }) {
               
 
               {isAuthenticated ? (
-                <Nav.Link onClick={() => logout({ returnTo: {currentUrl} })}>
+                <Nav.Link onClick={() => logout( { logoutParams: { returnTo: window.location.origin }})}>
                   Logout
                 </Nav.Link>
               ) : (
