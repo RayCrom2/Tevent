@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
-import GoogleMapReact from "google-map-react";
+// import GoogleMapReact from "google-map-react";
 import axios from "axios";
 import { FaSearch } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import fakeEvents from "../Fakedata/fakeEvents";
 
-const EventMarker = ({ lat, lng, text }) => (
-  <div style={{ color: "red", fontWeight: "bold", fontSize: "12px" }}>
-    🔴 {text}
-  </div>
-);
+// const EventMarker = ({ lat, lng, text }) => (
+//   <div style={{ color: "red", fontWeight: "bold", fontSize: "12px" }}>
+//     🔴 {text}
+//   </div>
+// );
 
-const LocationMarker = ({ lat, lng }) => (
-  <div style={{ color: "blue", fontWeight: "bold", fontSize: "12px" }}>
-    📍
-  </div>
-);
+// const LocationMarker = ({ lat, lng }) => (
+//   <div style={{ color: "blue", fontWeight: "bold", fontSize: "12px" }}>
+//     📍
+//   </div>
+// );
 
 const Modal = ({ event, onClose }) => {
   if (!event) return null;
@@ -45,19 +45,19 @@ const EventSearch = () => {
   const [locationInput, setLocationInput] = useState("");
   const [activeEvent, setActiveEvent] = useState(null);
 
-    const fetchCoordinates = async (location) => {
-    try {
-      const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
-        params: { address: location, key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY },
-      });
-      if (response.data.results.length > 0) {
-        return response.data.results[0].geometry.location;
-      }
-    } catch (error) {
-      console.error("Error fetching coordinates:", error);
-    }
-    return null;
-  };
+  //   const fetchCoordinates = async (location) => {
+  //   try {
+  //     const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+  //       params: { address: location, key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY },
+  //     });
+  //     if (response.data.results.length > 0) {
+  //       return response.data.results[0].geometry.location;
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching coordinates:", error);
+  //   }
+  //   return null;
+  // };
 
   const filterByDate = (events, filter) => {
     const today = new Date();
@@ -115,7 +115,7 @@ const handleSearch = async () => {
   }
 
   setFilteredEvents(filtered);
-  setEventMarkers(filtered.map(event => ({ lat: event.lat, lng: event.lng, title: event.title })));
+  // setEventMarkers(filtered.map(event => ({ lat: event.lat, lng: event.lng, title: event.title })));
 
   if (filtered.length > 0) {
     setCoordinates({ lat: filtered[0].lat, lng: filtered[0].lng });
