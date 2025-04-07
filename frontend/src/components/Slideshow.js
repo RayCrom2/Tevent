@@ -2,8 +2,8 @@
 import React from "react";
 import Slider from "react-slick"; // Importing the Slider component from react-slick
 import './Slideshow.css';  // Update the path as necessary based on your file structure
-import { useLocation } from 'react-router-dom';
 
+{/* Import Images */}
 import rave from '../assets/images/rave.jpg';
 import motox from '../assets/images/motox.jfif';
 import pottery from '../assets/images/pottery.jpeg';
@@ -13,7 +13,6 @@ import fleaMkt from '../assets/images/fleamkt.jpg';
 
 const Slideshow = () => {
 
-  const location = useLocation(); // Access the location object
   const eventsUrl = `${window.location.href}events`; // Append '/events' to the current path
   console.log(eventsUrl);
 
@@ -22,27 +21,26 @@ const Slideshow = () => {
       text: "Feel the pulse of the night! 🎉 Dive into the electric atmosphere of our raves.", 
       linkText: "Click here",
       postLinkText: "to discover the most exhilarating parties near you. Don't miss out on the beat!",
-      link: "https://example.com/2" },
+    },
     { image: motox, 
       text: "Get dirty, get fast! 🏍️ Feel the rush of motor cross races. Join the mud-slinging action by", 
       linkText: "clicking here",
       postLinkText: "to find events that rev your engine. Race into the adventure!",
-      link: "https://example.com/2" },
+    },
     { image: pottery, 
       text: "Unleash your creativity with clay! 🏺 Explore pottery workshops near you.", 
       linkText: "Click here",
       postLinkText: "to start your journey into arts and crafts. Shape your first masterpiece today!",
-      link: "https://example.com/2" },
+    },
     { image: mclaren, 
       text: "Ready, set, thrill! 🏁 Experience the adrenaline of super sport races. Join the excitement and witness the speed live.", 
       linkText: "Click here",
       postLinkText: "to find races speeding your way!",
-      link: "https://example.com/2" },
+    },
     { image: fleaMkt, 
       text: "Treasure awaits! 🛍️ Wander through vibrant flea markets filled with surprises.", 
       linkText: "Click here",
       postLinkText: "to discover unique finds and hidden gems at a market near you. Happy hunting!",
-      link: '{eventsUrl}',
     }
   ];
 

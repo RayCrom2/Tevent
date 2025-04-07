@@ -5,7 +5,6 @@ import { useAuth0 } from "@auth0/auth0-react";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
-import Profile from "./pages/Profile";
 import About from "./pages/About";
 import Register from "./components/Register"; 
 import Calendar from "./pages/Calendar";

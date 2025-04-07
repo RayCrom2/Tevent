@@ -62,14 +62,26 @@ const EventSearch = () => {
   const filterByDate = (events, filter) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+// Extract the year, month, and day
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed, add 1 to match the conventional month number
+    const day = today.getDate().toString().padStart(2, '0');
+
+// Format the date in 'YYYY-MM-DD' format
+    const formattedDate = `${year}-${month}-${day}`;
+    console.log(formattedDate);
+
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay());
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
+    // console.log(today);
 
     switch (filter) {
       case "today":
-        return events.filter(event => new Date(event.date).toDateString() === today.toDateString());
+        console.log('Today: ',today.toDateString());
+        return events.filter(event => console.log('new Date: ', new Date(event.date).toDateString()))// === today.toDateString());
       case "tomorrow":
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
