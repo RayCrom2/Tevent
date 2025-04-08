@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 app.use(express.json());
 app.use(cors());
 app.use("/auth", authRoutes);
+app.use("/api", userRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {

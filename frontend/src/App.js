@@ -42,10 +42,13 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Profile from "./pages/Profile";
+
 import About from "./pages/About";
 import Register from "./components/Register"; 
+
 import './styles/styles.css';
 import { useEffect } from "react";
+import FriendSearch from "./components/FriendSearch";
 
 const App = () => {
   const { isAuthenticated, user } = useAuth0();
@@ -94,6 +97,7 @@ const App = () => {
           <Route path="/profile" element={isAuthenticated ? <Profile /> : <h2>Please log in.</h2>} />
           <Route path="/events" element={<Events searchQuery={searchQuery} locationQuery={locationQuery} />} />
           <Route path="/about" element={<About />} />
+          <Route path="/friends" element={<FriendSearch />} />
           <Route path="/register" element={<Register />} /> {/* ✅ new route for Register */}
           <Route path="*" element={<h2>Page Not Found</h2>} />
         </Routes>

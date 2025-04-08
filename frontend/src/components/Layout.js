@@ -86,6 +86,7 @@ const Layout = ({ children, onSearch }) => {
             <Nav className="me-auto d-flex align-items-center">
               <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
               <Nav.Link as={Link} to="/events">Events</Nav.Link>
+              <Nav.Link as={Link} to="/friends">Friends</Nav.Link>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
               {isAuthenticated ? (
                 <Nav.Link onClick={() => logout({ returnTo: window.location.origin })}>
