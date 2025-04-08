@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Auth0Provider } from "@auth0/auth0-react";
 import App from "./App";
-// import './styles/styles.css';
+import { ThemeProvider } from './context/ThemeContext';
 
 const domain = "dev-k06j7xhhvoyppfkq.us.auth0.com";
 const clientId = "tqq6iRdRdU4dXNCDEJ76A9BjDeQqwJt7";
@@ -15,9 +15,9 @@ root.render(
       clientId={clientId}
       authorizationParams={{ redirect_uri: window.location.origin }}
     >
-      <App />
+      <ThemeProvider> 
+        <App />
+      </ThemeProvider>
     </Auth0Provider>
   </React.StrictMode>
 );
-
-

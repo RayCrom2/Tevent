@@ -4,6 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 
 import { useAuth0 } from "@auth0/auth0-react"; // ✅ Import Auth0 hook
 import 'bootstrap/dist/css/bootstrap.min.css'; // import Bootstrap CSS
+import ToggleThemeButton from './ToggleThemeButton'; // ✅ correct for default export
+
 
 function Layout({ children }) {
   const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
@@ -31,6 +33,8 @@ function Layout({ children }) {
               ) : (
                 <Nav.Link onClick={() => loginWithRedirect()}>Login</Nav.Link>
               )}
+              <ToggleThemeButton />
+
             </Nav>
           </Navbar.Collapse>
         </Container>

@@ -4,6 +4,8 @@ import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react";
 import { createViewWeek, createViewMonthGrid } from "@schedule-x/calendar";
 import "@schedule-x/theme-default/dist/calendar.css";
 
+
+
 function EventCalendar() {
     const currentDate = new Date().toISOString().split('T')[0];
     
@@ -15,7 +17,6 @@ function EventCalendar() {
         ],
         events: [
             {
-
                 id: 1,
                 title: "test event",
                 start: "2025-03-28",

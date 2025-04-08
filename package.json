@@ -4,6 +4,8 @@
     "@schedule-x/theme-default": "^2.25.0",
     "dotenv": "^16.4.7",
     "mogodb": "^0.0.1-security",
-    "mongoose": "^8.12.2"
+    "mongoose": "^8.12.2",
+    "react-slick": "^0.30.3",
+    "slick-carousel": "^1.8.1"
   }
 }

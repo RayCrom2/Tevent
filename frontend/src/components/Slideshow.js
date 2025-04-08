@@ -13,8 +13,12 @@ import fleaMkt from '../assets/images/fleamkt.jpg';
 
 const Slideshow = () => {
 
-  const location = useLocation(); // Access the location object
-  const eventsUrl = `${window.location.href}events`; // Append '/events' to the current path
+  // const location = useLocation(); // Access the location object
+  // const eventsUrl = `${window.location.href}events`; // Append '/events' to the current path
+
+  const location = useLocation();
+  const eventsUrl = `${window.location.origin}/events`;
+
   console.log(eventsUrl);
 
   const images = [
@@ -42,7 +46,7 @@ const Slideshow = () => {
       text: "Treasure awaits! 🛍️ Wander through vibrant flea markets filled with surprises.", 
       linkText: "Click here",
       postLinkText: "to discover unique finds and hidden gems at a market near you. Happy hunting!",
-      link: '{eventsUrl}',
+      link: eventsUrl,
     }
   ];
 
