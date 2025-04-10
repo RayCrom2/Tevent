@@ -155,7 +155,7 @@ const handleSearch = async () => {
        <div className="row">
          {/* LEFT SIDE - Filters & Events */}
          <div className="col-md-8">
-           <h2>Upcoming Events</h2>
+           <h1>Upcoming Events</h1>
 
            {/* Search Bar */}
            <div className="d-flex align-items-center mb-3 search-bar-container">
