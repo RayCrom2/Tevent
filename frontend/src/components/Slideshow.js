@@ -1,7 +1,7 @@
 // src/Slideshow.js
 import React from "react";
 import Slider from "react-slick"; // Importing the Slider component from react-slick
-import './Slideshow.css';  // Update the path as necessary based on your file structure
+import '../styles/Slideshow.css';  // Update the path as necessary based on your file structure
 
 {/* Import Images */}
 import rave from '../assets/images/rave.jpg';
