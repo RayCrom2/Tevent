@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaHeart, FaRegHeart } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";

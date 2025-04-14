@@ -1,53 +1,14 @@
-// import React from 'react';
-// import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react";
-// import { createViewWeek, createViewMonthGrid } from "@schedule-x/calendar";
-// import "@schedule-x/theme-default/dist/calendar.css";
-
-// function EventCalendar() {
-//     const currentDate = new Date().toISOString().split('T')[0];
-    
-//     const calendar = useCalendarApp({
-
-//         views: [
-//             createViewWeek({key:'week'}),
-//             createViewMonthGrid({key: 'month'})
-//         ],
-//         events: [
-//             {
-
-//                 id: 1,
-//                 title: "test event",
-//                 start: "2025-04-12 02:00",
-//                 end: "2025-04-12 06:00"
-//             }
-//         ],
-//         selectedDate: currentDate
-//     });
-
-//     return (
-//         <div style = {{height: '90vh'}}>
-//             <ScheduleXCalendar calendarApp={calendar} />
-//         </div>
-//     );
-// }
-
-// export default EventCalendar;
-
 import React, { useState } from 'react';
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react";
 import { createViewWeek, createViewMonthGrid } from "@schedule-x/calendar";
 import "@schedule-x/theme-default/dist/calendar.css";
 import fakeEvents from '../Fakedata/fakeEvents';
-import Calendar from '../pages/Calendar';
 import useUserProfile from "../hooks/useUserProfile";
 
 
 function EventCalendar() {
     const { isAuthenticated } = useUserProfile();
 
-    // const defaultStartTime = startTime || "09:00";  // Default to 9 AM if empty
-    // const defaultEndTime = endTime || "17:00"; 
-   
     const currentDate = new Date().toISOString().split('T')[0];
     const defaultStartTimeF = '09:00';  // Default to 9 AM if empty
     const defaultEndTimeF = '10:00'; 
@@ -114,7 +75,7 @@ function EventCalendar() {
 
     return (
         <div>
-            <h2>Events Calendar</h2>
+            <h1>Events Calendar</h1>
             {isAuthenticated ?(
              <div className="event-form-container">
              <h3>Add New Event</h3>

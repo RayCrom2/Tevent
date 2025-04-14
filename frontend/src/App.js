@@ -9,7 +9,7 @@ import About from "./pages/About";
 import Register from "./components/Register";
 import Calendar from "./pages/Calendar";
 import './styles/styles.css';
-import "./App.css"
+import "./styles/App.css"
 import UserProfile from "./components/UserProfile";
 import ProtectedRoute from "./components/ProtectedRoute"; // <--- import it here
 
