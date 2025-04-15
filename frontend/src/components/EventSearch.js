@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaHeart, FaRegHeart } from "react-icons/fa";
-import "bootstrap/dist/css/bootstrap.min.css";
 import fakeEvents from "../Fakedata/fakeEvents";
+import { useAuth0 } from "@auth0/auth0-react";
+import { toast } from 'react-toastify';
+
+import "bootstrap/dist/css/bootstrap.min.css";
+
+
 
 const Modal = ({ event, onClose }) => {
   if (!event) return null;
@@ -19,6 +24,7 @@ const Modal = ({ event, onClose }) => {
 };
 
 const EventSearch = () => {
+  const { isAuthenticated } = useAuth0();
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
@@ -44,9 +50,14 @@ const EventSearch = () => {
   }, [favorites]);
 
   const toggleFavorite = (eventId) => {
+    if (!isAuthenticated){
+      toast.error("Must be signed in to favorite events");
+    }
+    else{
     setFavorites((prev) =>
       prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
     );
+  }
   };
 
   const filterByDate = (events, filter) => {

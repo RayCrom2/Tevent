@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScheduleXCalendar, useCalendarApp } from "@schedule-x/react";
 import { createViewWeek, createViewMonthGrid } from "@schedule-x/calendar";
-import "@schedule-x/theme-default/dist/calendar.css";
+import { toast } from 'react-toastify';
+
 import fakeEvents from '../Fakedata/fakeEvents';
 import useUserProfile from "../hooks/useUserProfile";
+
+import "@schedule-x/theme-default/dist/calendar.css";
 
 
 function EventCalendar() {
@@ -37,7 +40,6 @@ function EventCalendar() {
         events: calendarEvents,
         selectedDate: currentDate,
         eventTooltipRenderer: ({ event }) => {
-            const description = event.metadata?.description || 'No description';
             return `<div style="padding: 6px; max-width: 200px;">
                       <strong>${event.title}</strong><br/>
                       <span>${event.description || 'No description'}</span>
@@ -73,9 +75,16 @@ function EventCalendar() {
         setEndTime('');
     };
 
+    useEffect(() => {
+        if (!isAuthenticated) {
+          toast.info("Log in to add your own Events to the Calendar");
+        }
+      }, [isAuthenticated]);
+
     return (
         <div>
             <h1>Events Calendar</h1>
+            
             {isAuthenticated ?(
              <div className="event-form-container">
              <h3>Add New Event</h3>
@@ -113,7 +122,7 @@ function EventCalendar() {
              </div>
              <button className="add-event-btn" onClick={handleAddEvent}>➕ Add Event</button>
          </div>):(
-                <p>Log In to add Events.</p>
+<h1></h1>
             )}
 
             <ScheduleXCalendar calendarApp={calendar} />
