@@ -92,6 +92,7 @@
     border-radius: 6px;
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
 }
+<<<<<<< HEAD:frontend/src/styles/styles.css
 
 /* Light theme (default) */
 :root {
@@ -109,5 +110,50 @@
     background-color: var(--bg-color);
     color: var(--text-color);
     transition: background-color 0.3s ease, color 0.3s ease;
+=======
+.event-form-container {
+    max-width: 500px;
+    margin: 1rem auto;
+    padding: 1rem;
+    background-color: #f4f4f4;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .form-group-row input {
+    flex: 1;
+  }
+  
+  input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+  
+  .add-event-btn {
+    background-color: #0066ff;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-event-btn:hover {
+    background-color: #0052cc;
+>>>>>>> origin/main:frontend/src/styles/Styles.css
   }
   

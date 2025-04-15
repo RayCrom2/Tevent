@@ -4,9 +4,11 @@ import Slideshow from "../components/Slideshow";
 const Home = () => {
   return (
     <div>
-      <Slideshow /> {/* Add the Slideshow component here */}
+      <Slideshow /> 
     </div>
   );
 };
 
 export default Home;
+
+

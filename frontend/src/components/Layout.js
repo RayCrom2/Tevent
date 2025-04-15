@@ -23,9 +23,7 @@ function Layout({ children }) {
               <Nav.Link as={Link} to={`/profile/${user?.nickname || "me"}`}>Profile</Nav.Link>
               <Nav.Link as={Link} to="/events">Events</Nav.Link>
               <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
-              {/* <Nav.Link as={Link} to="/about">About</Nav.Link> */}
               
-
               {isAuthenticated ? (
                 <Nav.Link onClick={() => logout( { logoutParams: { returnTo: window.location.origin }})}>
                   Logout

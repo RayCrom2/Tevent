@@ -1,50 +1,69 @@
 import React, { useState, useEffect } from "react";
-import GoogleMapReact from "google-map-react";
-import axios from "axios";
-import { FaSearch } from "react-icons/fa";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { FaSearch, FaHeart, FaRegHeart } from "react-icons/fa";
 import fakeEvents from "../Fakedata/fakeEvents";
+import { useAuth0 } from "@auth0/auth0-react";
+import { toast } from 'react-toastify';
 
-const EventMarker = ({ lat, lng, text }) => (
-  <div style={{ color: "red", fontWeight: "bold", fontSize: "12px" }}>
-    🔴 {text}
-  </div>
-);
+import "bootstrap/dist/css/bootstrap.min.css";
 
-const LocationMarker = ({ lat, lng }) => (
-  <div style={{ color: "blue", fontWeight: "bold", fontSize: "12px" }}>
-    📍
-  </div>
-);
+
+
+const Modal = ({ event, onClose }) => {
+  if (!event) return null;
+  return (
+    <div className="modal" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ backgroundColor: 'white', padding: 20, borderRadius: 5, minWidth: '50%' }}>
+        <h2>{event.title}</h2>
+        <p><strong>Date:</strong> {event.date}</p>
+        <p><strong>Location:</strong> {event.location}</p>
+        <p>{event.description}</p>
+        <button onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+};
 
 const EventSearch = () => {
+  const { isAuthenticated } = useAuth0();
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [distanceFilter, setDistanceFilter] = useState("");
-  const [locationMarker, setLocationMarker] = useState(null);
-  const [eventMarkers, setEventMarkers] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
+  const [activeEvent, setActiveEvent] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
-  const fetchCoordinates = async (location) => {
-    try {
-      const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
-        params: { address: location, key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY },
-      });
-      if (response.data.results.length > 0) {
-        return response.data.results[0].geometry.location;
-      }
-    } catch (error) {
-      console.error("Error fetching coordinates:", error);
+  // Load favorites from localStorage
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem("favorites");
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
     }
-    return null;
+  }, []);
+
+  // Save favorites to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (eventId) => {
+    if (!isAuthenticated){
+      toast.error("Must be signed in to favorite events");
+    }
+    else{
+    setFavorites((prev) =>
+      prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
+    );
+  }
   };
 
   const filterByDate = (events, filter) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay());
     const endOfWeek = new Date(startOfWeek);
@@ -76,7 +95,7 @@ const EventSearch = () => {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     let filtered = fakeEvents;
 
     if (searchInput) {
@@ -98,35 +117,23 @@ const EventSearch = () => {
     }
 
     setFilteredEvents(filtered);
-    setEventMarkers(filtered.map(event => ({ lat: event.lat, lng: event.lng, title: event.title })));
-
-    if (filtered.length > 0) {
-      setCoordinates({ lat: filtered[0].lat, lng: filtered[0].lng });
-      setLocationMarker(null);
-    } else if (locationInput) {
-      const coords = await fetchCoordinates(locationInput);
-      if (coords) {
-        setCoordinates(coords);
-        setLocationMarker(coords);
-        setEventMarkers([]);
-      }
-    } else {
-      setCoordinates({ lat: 38.4404, lng: -122.7141 });
-      setLocationMarker(null);
-      setEventMarkers([]);
-    }
   };
 
   useEffect(() => {
-    handleSearch(); // Automatically filter when filters change
+    handleSearch();
   }, [category, dateFilter, distanceFilter]);
+
+  // This is the list to show, depending on the favorites toggle
+  const eventsToDisplay = showOnlyFavorites
+    ? filteredEvents.filter(event => favorites.includes(event.id))
+    : filteredEvents;
 
   return (
     <div className="container mt-4">
       <div className="row">
         {/* LEFT SIDE - Filters & Events */}
         <div className="col-md-8">
-          <h2>Upcoming Events</h2>
+          <h1>Upcoming Events</h1>
 
           {/* Search Bar */}
           <div className="d-flex align-items-center mb-3 search-bar-container">
@@ -183,13 +190,38 @@ const EventSearch = () => {
             </select>
           </div>
 
+          {/* Favorites Filter */}
+          <div className="form-check mb-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="favoriteToggle"
+              checked={showOnlyFavorites}
+              onChange={(e) => setShowOnlyFavorites(e.target.checked)}
+            />
+            <label className="form-check-label" htmlFor="favoriteToggle">
+              Show only favorites
+            </label>
+          </div>
+
           {/* Event List */}
           <div className="row">
-            {filteredEvents.map((event) => (
+            {eventsToDisplay.map((event) => (
               <div key={event.id} className="col-md-6 mb-4">
                 <div className="card shadow-sm">
                   <div className="card-body">
-                    <h5 className="card-title">{event.title}</h5>
+                    <div className="d-flex justify-content-between align-items-start">
+                      <h5 className="card-title" onClick={() => setActiveEvent(event)} style={{ cursor: "pointer" }}>
+                        {event.title}
+                      </h5>
+                      <button
+                        className="btn btn-link text-danger"
+                        onClick={() => toggleFavorite(event.id)}
+                        title={favorites.includes(event.id) ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        {favorites.includes(event.id) ? <FaHeart /> : <FaRegHeart />}
+                      </button>
+                    </div>
                     <p className="card-text"><strong>Date:</strong> {event.date}</p>
                     <p className="card-text"><strong>Location:</strong> {event.location}</p>
                     <p className="card-text">{event.description}</p>
@@ -197,28 +229,20 @@ const EventSearch = () => {
                 </div>
               </div>
             ))}
-            {filteredEvents.length === 0 && <p>No events found.</p>}
+            {eventsToDisplay.length === 0 && <p>No events found.</p>}
           </div>
         </div>
 
         {/* RIGHT SIDE - Google Map */}
         <div className="col-md-4">
-          <div style={{ position: "sticky", top: "80px", height: "500px" }}>
-            <GoogleMapReact
-              bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY }}
-              center={coordinates}
-              defaultZoom={12}
-            >
-              {eventMarkers.map((event, index) => (
-                <EventMarker key={index} lat={event.lat} lng={event.lng} text={event.title} />
-              ))}
-              {locationMarker && <LocationMarker lat={locationMarker.lat} lng={locationMarker.lng} />}
-            </GoogleMapReact>
-          </div>
+          {/* Google Map Placeholder */}
         </div>
       </div>
+
+      <Modal event={activeEvent} onClose={() => setActiveEvent(null)} />
     </div>
   );
 };
 
 export default EventSearch;
+ 
