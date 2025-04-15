@@ -1,22 +1,32 @@
 // ProtectedRoute.js
 import React, { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { toast } from 'react-toastify';
+
+
 
 export default function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
 
   useEffect(() => {
-    // Only attempt redirect if we're done loading and the user is not authenticated
     if (!isLoading && !isAuthenticated) {
-      loginWithRedirect();
+      // Show the toast
+      toast.error("⚠️ You must be logged in to access this page.");
+      toast.info("Redirecting to Log-In...")
+  
+      // Delay the redirect, e.g. 3 seconds
+      const timer = setTimeout(() => {
+        loginWithRedirect();
+      }, 3000);
+  
+      // Clear timeout if this component unmounts
+      return () => clearTimeout(timer);
     }
   }, [isLoading, isAuthenticated, loginWithRedirect]);
 
-  // While Auth0 is checking authentication status, show a loading indicator
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  // Render the children (e.g. <UserProfile />) if authenticated; otherwise do nothing
-  return isAuthenticated ? children : null;
+  return isAuthenticated ? children : null; // null since loginWithRedirect will handle the redirect
 }

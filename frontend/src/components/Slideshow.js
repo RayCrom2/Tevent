@@ -1,7 +1,6 @@
 // src/Slideshow.js
 import React from "react";
 import Slider from "react-slick"; // Importing the Slider component from react-slick
-import '../styles/Slideshow.css';  // Update the path as necessary based on your file structure
 
 {/* Import Images */}
 import rave from '../assets/images/rave.jpg';
@@ -9,6 +8,9 @@ import motox from '../assets/images/motox.jfif';
 import pottery from '../assets/images/pottery.jpeg';
 import mclaren from '../assets/images/mclarenrace.webp';
 import fleaMkt from '../assets/images/fleamkt.jpg';
+
+{/* Styling */}
+import '../styles/Slideshow.css';  // Update the path as necessary based on your file structure
 
 
 const Slideshow = () => {
@@ -54,8 +56,8 @@ const Slideshow = () => {
     autoplay: true,       // Enable autoplay
     autoplaySpeed: 8000,  // Speed of autoplay in ms
   };
+  
   return (
-    
     <div className="slideshow-container">
   <Slider {...settings}>
     {images.map((slide, index) => (

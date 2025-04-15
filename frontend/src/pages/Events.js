@@ -10,3 +10,4 @@ const Events = ({ searchQuery, locationQuery }) => {
 };
 
 export default Events;
+
