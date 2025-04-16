@@ -1,12 +1,8 @@
 import React from "react";
 import EventSearch from "../components/EventSearch";
 
-const Events = ({ searchQuery, locationQuery }) => {
-  return (
-    <div>
-      <EventSearch searchQuery={searchQuery} locationQuery={locationQuery} />
-    </div>
-  );
+const Events = ({ isLoaded, searchQuery, locationQuery }) => {
+  return <EventSearch isLoaded={isLoaded} searchQuery={searchQuery} locationQuery={locationQuery} />;
 };
 
 export default Events;
