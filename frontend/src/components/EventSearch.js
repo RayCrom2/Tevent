@@ -1,62 +1,83 @@
 import React, { useState, useEffect } from "react";
-import AutocompleteInput from "../components/AutocompleteInput";
-import axios from "axios";
 import { FaSearch, FaHeart, FaRegHeart } from "react-icons/fa";
-import fakeEvents from "../Fakedata/fakeEvents";
 import { getDistanceFromLatLng } from "../utils/distanceUtils";
 import { fetchCoordinates } from "../utils/locationUtils";
-import { filterEventsByDate } from "../utils/dateUtils";
-import Modal from "../components/Modal";
-import MapWithMarkers from "../components/MapWithMarkers";
-import Fuse from "fuse.js";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from 'react-toastify';
-import "bootstrap/dist/css/bootstrap.min.css";
 import { filterByDate } from "../utils/dateUtils";
+import Fuse from "fuse.js";
+import "bootstrap/dist/css/bootstrap.min.css";
 
+import AutocompleteInput from "../components/AutocompleteInput";
+import Modal from "../components/Modal";
+import MapWithMarkers from "../components/MapWithMarkers";
+import { filterByAudience } from "../utils/audienceUtils";
+import fakeEvents from "../Fakedata/fakeEvents";
 
-
-const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
+const EventSearch = ({ isLoaded }) => {
   const { isAuthenticated } = useAuth0();
+
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [distanceFilter, setDistanceFilter] = useState("");
-  const [locationMarker, setLocationMarker] = useState(null);
-  const [eventMarkers, setEventMarkers] = useState([]);
-  const [searchInput, setSearchInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
   const [activeEvent, setActiveEvent] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [mapTriggeredByLocationSearch, setMapTriggeredByLocationSearch] = useState(false);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
 
+  // NEW: audienceFilter state
+  const [audienceFilter, setAudienceFilter] = useState("");
 
-    // Load favorites from localStorage
-    useEffect(() => {
-      const savedFavorites = localStorage.getItem("favorites");
-      if (savedFavorites) {
-        setFavorites(JSON.parse(savedFavorites));
-      }
-    }, []);
-  
-    // Save favorites to localStorage whenever they change
-    useEffect(() => {
-      localStorage.setItem("favorites", JSON.stringify(favorites));
-    }, [favorites]);
-  
-    const toggleFavorite = (eventId) => {
-      if (!isAuthenticated){
-        toast.error("Must be signed in to favorite events");
-      }
-      else{
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem("favorites");
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (eventId) => {
+    if (!isAuthenticated){
+      toast.error("Must be signed in to favorite events");
+    } else {
       setFavorites((prev) =>
         prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
       );
     }
-    };
+  };
+
+  const handleUseMyLocation = () => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          handleSearch({
+            newCoordinates: {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            },
+          });
+        },
+        (error) => {
+          console.error(error);
+          toast.error("Unable to retrieve your location.");
+        }
+      );
+    } else {
+      toast.error("Geolocation is not supported by your browser.");
+    }
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -64,10 +85,10 @@ const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
     }
   };
 
-
-  const handleSearch = async () => {
+  const handleSearch = async ({ newCoordinates } = {}) => {
     let filtered = fakeEvents;
 
+    // Title/Location text search:
     if (searchInput) {
       const fuse = new Fuse(fakeEvents, {
         keys: ["title", "location"],
@@ -77,64 +98,78 @@ const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
       filtered = results.map(result => result.item);
     }
 
+    // Category filter
     if (category) {
       filtered = filtered.filter(event => event.category.toLowerCase() === category.toLowerCase());
     }
 
+    // Date filter
     if (dateFilter) {
       filtered = filterByDate(filtered, dateFilter);
     }
 
-    if (distanceFilter) {
-      filtered = filtered.filter(event => event.distance <= parseInt(distanceFilter));
-    }
+    // Distance filter
+    const userCoords = newCoordinates || coordinates;
+    const maxDistance = distanceFilter ? parseInt(distanceFilter) : null;
 
-    if (locationInput) {
+    if (locationInput.trim().length) {
       const coords = await fetchCoordinates(locationInput);
       if (coords) {
+        userCoords.lat = coords.lat;
+        userCoords.lng = coords.lng;
         setCoordinates(coords);
-  
-        // Filter by distance (default to 100 if not selected)
-        const maxDistance = distanceFilter ? parseInt(distanceFilter) : 100;
-  
-        filtered = filtered.filter(event => {
-          const distance = getDistanceFromLatLng(coords.lat, coords.lng, event.lat, event.lng);
-          return distance <= maxDistance;
-        });
       } else {
-        // fallback if geocode fails: text match
         filtered = filtered.filter(event =>
           event.location.toLowerCase().includes(locationInput.toLowerCase())
         );
       }
     }
 
+    if (maxDistance) {
+      filtered = filtered.filter((event) => {
+        const distance = getDistanceFromLatLng(
+          userCoords.lat,
+          userCoords.lng,
+          event.lat,
+          event.lng
+        );
+        return distance <= maxDistance;
+      });
+    }
+
+    // NEW: audience filter
+    if (audienceFilter) {
+      filtered = filtered.filter((event) => {
+        // Make sure your events have something like event.audience = "Everyone" or "18+" or "21+"
+        return event.audience === audienceFilter;
+      });
+      
+    }
+    filtered = filterByAudience(filtered, audienceFilter);
     setFilteredEvents(filtered);
-    // Show map only when there's a location input (i.e. location search happened)
     setMapTriggeredByLocationSearch(!!locationInput.trim());
     setHasSearched(true);
   };
 
   useEffect(() => {
+    // Re-run search if category/date/distance/audience changes
     handleSearch();
-  }, [category, dateFilter, distanceFilter]);
+  }, [category, dateFilter, distanceFilter, audienceFilter]);
 
-  // This is the list to show, depending on the favorites toggle
   const eventsToDisplay = showOnlyFavorites
     ? filteredEvents.filter(event => favorites.includes(event.id))
     : filteredEvents;
 
-    if (!isLoaded) return <p>Loading Google Maps...</p>;
-
+  if (!isLoaded) return <p>Loading Google Maps...</p>;
 
   return (
     <div className="container mt-4">
       <div className="row">
-        {/* LEFT SIDE - Filters & Events */}
+        {/* LEFT SIDE */}
         <div className="col-md-8">
           <h1>Upcoming Events</h1>
 
-          {/* Search Bar */}
+          {/* SEARCH BAR */}
           <div className="d-flex align-items-center mb-3 search-bar-container">
             <input
               type="text"
@@ -144,10 +179,11 @@ const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
             />
+
             <AutocompleteInput
               value={locationInput}
               onChange={(e) => setLocationInput(e.target.value)}
-              placeholder="Enter city or location..."
+              placeholder="Enter city or zip code..."
               onPlaceSelected={(place) => {
                 const coords = {
                   lat: place.geometry.location.lat(),
@@ -155,17 +191,21 @@ const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
                 };
                 setCoordinates(coords);
                 setLocationInput(place.formatted_address);
-                //handleSearch();
               }}
               onKeyDown={handleKeyDown}
             />
-            <button className="btn btn-danger" onClick={handleSearch}>
+
+            <button className="btn btn-danger" onClick={() => handleSearch()}>
               <FaSearch />
+            </button>
+
+            <button className="btn btn-secondary ms-2" onClick={handleUseMyLocation}>
+              Use My Location
             </button>
           </div>
 
-          {/* Filters */}
-          <div className="d-flex mb-3 gap-3">
+          {/* FILTERS */}
+          <div className="d-flex mb-4 gap-3">
             <select className="form-select" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
               <option value="">Any Day</option>
               <option value="today">Today</option>
@@ -192,8 +232,17 @@ const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
               <option value="Food & Drink">Food & Drink</option>
               <option value="Health & Fitness">Health & Fitness</option>
             </select>
+
+            {/* Audience Filter */}
+           <select className="form-select" value={audienceFilter} onChange={(e) => setAudienceFilter(e.target.value)}>
+              <option value="">Any Audience</option>
+              <option value="Everyone">Everyone</option>
+              <option value="18+">18+</option>
+              <option value="21+">21+</option>
+          </select>
           </div>
-          {/* Favorites Filter */}
+
+          {/* Favorites toggle */}
           <div className="form-check mb-3">
             <input
               className="form-check-input"
@@ -206,29 +255,45 @@ const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
               Show only favorites
             </label>
           </div>
-          {/* Event List */}
+
+          {/* EVENT LIST */}
           <div className="row">
-          {eventsToDisplay.map((event) => ( <div key={event.id} className="col-md-6 mb-4" onClick={() => setActiveEvent(event)}>
+            {eventsToDisplay.map((event) => (
+              <div key={event.id} className="col-md-6 mb-4" onClick={() => setActiveEvent(event)}>
                 <div className="card shadow-sm">
                   <div className="card-body">
-                  {/* <h5 className="card-title">{event.title}</h5> */}
                     <div className="d-flex justify-content-between align-items-start">
-                      <h5 className="card-title" onClick={() => setActiveEvent(event)} style={{ cursor: "pointer" }}>
+                      <h5
+                        className="card-title"
+                        onClick={() => setActiveEvent(event)}
+                        style={{ cursor: "pointer" }}
+                      >
                         {event.title}
                       </h5>
                       <button
-                       className="btn btn-link text-danger"
+                        className="btn btn-link text-danger"
                         onClick={(e) => {
-                        e.stopPropagation(); //prevents the click from bubbling up
-                       toggleFavorite(event.id);
-                     }}
-                        title={favorites.includes(event.id) ? "Remove from favorites" : "Add to favorites"}
+                          e.stopPropagation();
+                          toggleFavorite(event.id);
+                        }}
+                        title={
+                          favorites.includes(event.id)
+                            ? "Remove from favorites"
+                            : "Add to favorites"
+                        }
                       >
-                       {favorites.includes(event.id) ? <FaHeart /> : <FaRegHeart />}
-                     </button>
+                        {favorites.includes(event.id) ? <FaHeart /> : <FaRegHeart />}
+                      </button>
                     </div>
-                    <p className="card-text"><strong>Date:</strong> {event.date}</p>
-                    <p className="card-text"><strong>Location:</strong> {event.location}</p>
+                    <p className="card-text">
+                      <strong>Date:</strong> {event.date}
+                    </p>
+                    <p className="card-text">
+                      <strong>Location:</strong> {event.location}
+                    </p>
+                    <p className="card-text">
+                      <strong>Audience:</strong> {event.audience || "Everyone"}
+                    </p>
                     <p className="card-text">{event.description}</p>
                   </div>
                 </div>
@@ -237,13 +302,12 @@ const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
             {eventsToDisplay.length === 0 && <p>No events found.</p>}
           </div>
         </div>
-        {/* RIGHT SIDE - Google Map */}
+
+        {/* RIGHT SIDE - Map */}
         <div className="col-md-4">
-        {mapTriggeredByLocationSearch && (
-         <div className="map-wrapper">
-          <MapWithMarkers center={coordinates} events={filteredEvents} isLoaded={isLoaded} />
+          <div className="map-wrapper">
+            <MapWithMarkers center={coordinates} events={filteredEvents} isLoaded={isLoaded} />
           </div>
-        )}
         </div>
       </div>
 
@@ -253,4 +317,3 @@ const EventSearch = ({ isLoaded, searchQuery, locationQuery }) => {
 };
 
 export default EventSearch;
- 
