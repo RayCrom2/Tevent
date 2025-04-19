@@ -17,7 +17,7 @@ import { useJsApiLoader } from "@react-google-maps/api";
 
 
 {/* Styling */}
-import './styles/Styles.css';
+import './styles/EventSearch.css';
 import "./styles/App.css"
 import 'bootstrap/dist/css/bootstrap.min.css';
 
