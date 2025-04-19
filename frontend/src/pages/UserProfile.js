@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import useUserProfile from "../hooks/useUserProfile";
-import UserLocationMap from "./UserLocationMap";
+import UserLocationMap from "../components/UserLocationMap";
 import "../styles/UserProfile.css";
 
 // UserProfile component displays and allows editing of user info like avatar, banner, name, username, bio, and contact info.

@@ -8,10 +8,11 @@ import { useAuth0 } from "@auth0/auth0-react";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Calendar from "./pages/Calendar";
+import UserProfile from "./pages/UserProfile";
+
 
 {/* Components */}
 import ProtectedRoute from "./components/ProtectedRoute";
-import UserProfile from "./components/UserProfile";
 import Layout from "./components/Layout";
 import { useJsApiLoader } from "@react-google-maps/api";
 
