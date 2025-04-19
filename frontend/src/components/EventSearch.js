@@ -26,11 +26,8 @@ const EventSearch = ({ isLoaded }) => {
   const [activeEvent, setActiveEvent] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
-  const [mapTriggeredByLocationSearch, setMapTriggeredByLocationSearch] = useState(false);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [searchInput, setSearchInput] = useState("");
-
-  // NEW: audienceFilter state
   const [audienceFilter, setAudienceFilter] = useState("");
 
   useEffect(() => {
@@ -137,7 +134,6 @@ const EventSearch = ({ isLoaded }) => {
       });
     }
 
-    // NEW: audience filter
     if (audienceFilter) {
       filtered = filtered.filter((event) => {
         // Make sure your events have something like event.audience = "Everyone" or "18+" or "21+"
@@ -147,7 +143,6 @@ const EventSearch = ({ isLoaded }) => {
     }
     filtered = filterByAudience(filtered, audienceFilter);
     setFilteredEvents(filtered);
-    setMapTriggeredByLocationSearch(!!locationInput.trim());
     setHasSearched(true);
   };
 

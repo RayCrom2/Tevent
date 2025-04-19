@@ -253,6 +253,18 @@ const fakeEvents = [
     lat: 38.3409,
     lng: -122.6746,
     distance: 2
+  },
+  {
+    id: 14,
+    title: "Fleet Week",
+    date: addDaysToDate(currentDate, 8),
+    audience: "Everyone",
+    location: "Fort Lauderdale, Florida",
+    description: "It will feature the Navy, Marine Corps and Coast Guard. You will be able to tour real Navy and Coast Guard ships. Slots fill up quickly, so register soon.",
+    category: "N/A",
+    lat: 26.122438,
+    lng: -80.137314,
+    distance: 5
   }
 ];
 
