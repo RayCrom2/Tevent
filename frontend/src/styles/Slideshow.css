@@ -1,9 +1,10 @@
 .slideshow-container {
-  width: 100%;
+  width: 85%;
   height: 775px; /* Example fixed height */
   margin: auto;
   position: relative;
   overflow: hidden; /* Hides parts of the image that might overflow */
+  
 }
 
 .slideshow-container img {

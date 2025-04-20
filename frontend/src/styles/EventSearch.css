@@ -51,7 +51,11 @@
 
 /* Search Icon Size */
 .search-icon {
+<<<<<<< HEAD:frontend/src/styles/Styles.css
   font-size: 10%;
+=======
+    font-size: 20%; /* Adjust icon size */
+>>>>>>> origin/main:frontend/src/styles/EventSearch.css
 }
 
 /* Filters */

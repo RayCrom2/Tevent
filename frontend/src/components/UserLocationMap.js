@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GoogleMap, LoadScriptNext, Marker, Circle } from "@react-google-maps/api";
 
-
 const mapContainerStyle = {
   width: "100%",
   height: "400px",
@@ -75,8 +74,7 @@ const UserLocationMap = () => {
         <p>Error: {location.error}</p>
       ) : location.lat && location.lng ? (
         <LoadScriptNext
-          googleMapsApiKey="AIzaSyBEdreH1wEgX5EkquGX8O1sfEZc_mxXjGQ"
-        // onLoad={() => setIsMapLoaded(true)}
+          googleMapsApiKey = {process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
         >
           <GoogleMap
             mapContainerStyle={mapContainerStyle}

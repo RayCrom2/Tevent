@@ -1,39 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaHeart, FaRegHeart } from "react-icons/fa";
-import fakeEvents from "../Fakedata/fakeEvents";
+import { getDistanceFromLatLng } from "../utils/distanceUtils";
+import { fetchCoordinates } from "../utils/locationUtils";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from 'react-toastify';
+<<<<<<< HEAD
+=======
+import { filterByDate } from "../utils/dateUtils";
+import Fuse from "fuse.js";
+>>>>>>> origin/main
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import AutocompleteInput from "../components/AutocompleteInput";
+import Modal from "../components/Modal";
+import MapWithMarkers from "../components/MapWithMarkers";
+import { filterByAudience } from "../utils/audienceUtils";
+import fakeEvents from "../Fakedata/fakeEvents";
 
-
-const Modal = ({ event, onClose }) => {
-  if (!event) return null;
-  return (
-    <div className="modal" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ backgroundColor: 'white', padding: 20, borderRadius: 5, minWidth: '50%' }}>
-        <h2>{event.title}</h2>
-        <p><strong>Date:</strong> {event.date}</p>
-        <p><strong>Location:</strong> {event.location}</p>
-        <p>{event.description}</p>
-        <button onClick={onClose}>Close</button>
-      </div>
-    </div>
-  );
-};
-
-const EventSearch = () => {
+const EventSearch = ({ isLoaded }) => {
   const { isAuthenticated } = useAuth0();
+
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [distanceFilter, setDistanceFilter] = useState("");
-  const [searchInput, setSearchInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
   const [activeEvent, setActiveEvent] = useState(null);
   const [favorites, setFavorites] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+<<<<<<< HEAD
   const [allEvents, setAllEvents] = useState([]);
 
   //Fecthes Events from the Database 
@@ -52,8 +49,11 @@ const EventSearch = () => {
   }, []);
   
 
+=======
+  const [searchInput, setSearchInput] = useState("");
+  const [audienceFilter, setAudienceFilter] = useState("");
+>>>>>>> origin/main
 
-  // Load favorites from localStorage
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
     if (savedFavorites) {
@@ -61,7 +61,6 @@ const EventSearch = () => {
     }
   }, []);
 
-  // Save favorites to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
@@ -69,6 +68,7 @@ const EventSearch = () => {
   const toggleFavorite = (eventId) => {
     if (!isAuthenticated){
       toast.error("Must be signed in to favorite events");
+<<<<<<< HEAD
     }
     else{
     setFavorites((prev) =>
@@ -118,41 +118,129 @@ const EventSearch = () => {
     if (searchInput) {
       filtered = filtered.filter(event =>
         event.title.toLowerCase().includes(searchInput.toLowerCase())
+=======
+    } else {
+      setFavorites((prev) =>
+        prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
+>>>>>>> origin/main
       );
     }
+  };
 
+  const handleUseMyLocation = () => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          handleSearch({
+            newCoordinates: {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            },
+          });
+        },
+        (error) => {
+          console.error(error);
+          toast.error("Unable to retrieve your location.");
+        }
+      );
+    } else {
+      toast.error("Geolocation is not supported by your browser.");
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleSearch = async ({ newCoordinates } = {}) => {
+    let filtered = fakeEvents;
+
+    // Title/Location text search:
+    if (searchInput) {
+      const fuse = new Fuse(fakeEvents, {
+        keys: ["title", "location"],
+        threshold: 0.3,
+      });
+      const results = fuse.search(searchInput);
+      filtered = results.map(result => result.item);
+    }
+
+    // Category filter
     if (category) {
       filtered = filtered.filter(event => event.category.toLowerCase() === category.toLowerCase());
     }
 
+    // Date filter
     if (dateFilter) {
       filtered = filterByDate(filtered, dateFilter);
     }
 
-    if (distanceFilter) {
-      filtered = filtered.filter(event => event.distance <= parseInt(distanceFilter));
+    // Distance filter
+    const userCoords = newCoordinates || coordinates;
+    const maxDistance = distanceFilter ? parseInt(distanceFilter) : null;
+
+    if (locationInput.trim().length) {
+      const coords = await fetchCoordinates(locationInput);
+      if (coords) {
+        userCoords.lat = coords.lat;
+        userCoords.lng = coords.lng;
+        setCoordinates(coords);
+      } else {
+        filtered = filtered.filter(event =>
+          event.location.toLowerCase().includes(locationInput.toLowerCase())
+        );
+      }
     }
 
+    if (maxDistance) {
+      filtered = filtered.filter((event) => {
+        const distance = getDistanceFromLatLng(
+          userCoords.lat,
+          userCoords.lng,
+          event.lat,
+          event.lng
+        );
+        return distance <= maxDistance;
+      });
+    }
+
+    if (audienceFilter) {
+      filtered = filtered.filter((event) => {
+        // Make sure your events have something like event.audience = "Everyone" or "18+" or "21+"
+        return event.audience === audienceFilter;
+      });
+      
+    }
+    filtered = filterByAudience(filtered, audienceFilter);
     setFilteredEvents(filtered);
+    setHasSearched(true);
   };
 
   useEffect(() => {
+    // Re-run search if category/date/distance/audience changes
     handleSearch();
-  }, [category, dateFilter, distanceFilter]);
+  }, [category, dateFilter, distanceFilter, audienceFilter]);
 
-  // This is the list to show, depending on the favorites toggle
   const eventsToDisplay = showOnlyFavorites
     ? filteredEvents.filter(event => favorites.includes(event.id))
     : filteredEvents;
 
+  if (!isLoaded) return <p>Loading Google Maps...</p>;
+
   return (
     <div className="container mt-4">
       <div className="row">
-        {/* LEFT SIDE - Filters & Events */}
+        {/* LEFT SIDE */}
         <div className="col-md-8">
           <h1>Upcoming Events</h1>
 
-          {/* Search Bar */}
+          {/* SEARCH BAR */}
           <div className="d-flex align-items-center mb-3 search-bar-container">
             <input
               type="text"
@@ -160,25 +248,35 @@ const EventSearch = () => {
               placeholder="Search events..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
-            <input
-              type="text"
-              className="form-control me-2"
-              placeholder="Enter city or location..."
+
+            <AutocompleteInput
               value={locationInput}
               onChange={(e) => setLocationInput(e.target.value)}
+              placeholder="Enter city or zip code..."
+              onPlaceSelected={(place) => {
+                const coords = {
+                  lat: place.geometry.location.lat(),
+                  lng: place.geometry.location.lng(),
+                };
+                setCoordinates(coords);
+                setLocationInput(place.formatted_address);
+              }}
+              onKeyDown={handleKeyDown}
             />
-            <button
-              className="btn btn-danger"
-              style={{ height: "35px", padding: "6px 10px", fontSize: "14px" }}
-              onClick={handleSearch}
-            >
-              <FaSearch style={{ fontSize: "12px" }} />
+
+            <button className="btn btn-danger" onClick={() => handleSearch()}>
+              <FaSearch />
+            </button>
+
+            <button className="btn btn-secondary ms-2" onClick={handleUseMyLocation}>
+              Use My Location
             </button>
           </div>
 
-          {/* Filters */}
-          <div className="d-flex mb-3 gap-3">
+          {/* FILTERS */}
+          <div className="d-flex mb-4 gap-3">
             <select className="form-select" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
               <option value="">Any Day</option>
               <option value="today">Today</option>
@@ -205,9 +303,17 @@ const EventSearch = () => {
               <option value="Food & Drink">Food & Drink</option>
               <option value="Health & Fitness">Health & Fitness</option>
             </select>
+
+            {/* Audience Filter */}
+           <select className="form-select" value={audienceFilter} onChange={(e) => setAudienceFilter(e.target.value)}>
+              <option value="">Any Audience</option>
+              <option value="Everyone">Everyone</option>
+              <option value="18+">18+</option>
+              <option value="21+">21+</option>
+          </select>
           </div>
 
-          {/* Favorites Filter */}
+          {/* Favorites toggle */}
           <div className="form-check mb-3">
             <input
               className="form-check-input"
@@ -221,26 +327,44 @@ const EventSearch = () => {
             </label>
           </div>
 
-          {/* Event List */}
+          {/* EVENT LIST */}
           <div className="row">
             {eventsToDisplay.map((event) => (
-              <div key={event.id} className="col-md-6 mb-4">
+              <div key={event.id} className="col-md-6 mb-4" onClick={() => setActiveEvent(event)}>
                 <div className="card shadow-sm">
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-start">
-                      <h5 className="card-title" onClick={() => setActiveEvent(event)} style={{ cursor: "pointer" }}>
+                      <h5
+                        className="card-title"
+                        onClick={() => setActiveEvent(event)}
+                        style={{ cursor: "pointer" }}
+                      >
                         {event.title}
                       </h5>
                       <button
                         className="btn btn-link text-danger"
-                        onClick={() => toggleFavorite(event.id)}
-                        title={favorites.includes(event.id) ? "Remove from favorites" : "Add to favorites"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(event.id);
+                        }}
+                        title={
+                          favorites.includes(event.id)
+                            ? "Remove from favorites"
+                            : "Add to favorites"
+                        }
                       >
                         {favorites.includes(event.id) ? <FaHeart /> : <FaRegHeart />}
                       </button>
                     </div>
-                    <p className="card-text"><strong>Date:</strong> {event.date}</p>
-                    <p className="card-text"><strong>Location:</strong> {event.location}</p>
+                    <p className="card-text">
+                      <strong>Date:</strong> {event.date}
+                    </p>
+                    <p className="card-text">
+                      <strong>Location:</strong> {event.location}
+                    </p>
+                    <p className="card-text">
+                      <strong>Audience:</strong> {event.audience || "Everyone"}
+                    </p>
                     <p className="card-text">{event.description}</p>
                   </div>
                 </div>
@@ -250,9 +374,11 @@ const EventSearch = () => {
           </div>
         </div>
 
-        {/* RIGHT SIDE - Google Map */}
+        {/* RIGHT SIDE - Map */}
         <div className="col-md-4">
-          {/* Google Map Placeholder */}
+          <div className="map-wrapper">
+            <MapWithMarkers center={coordinates} events={filteredEvents} isLoaded={isLoaded} />
+          </div>
         </div>
       </div>
 
@@ -262,4 +388,3 @@ const EventSearch = () => {
 };
 
 export default EventSearch;
- 

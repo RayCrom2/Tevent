@@ -1,26 +1,40 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
+import { useAuth0 } from "@auth0/auth0-react";
+
 
 {/* Pages */}
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Calendar from "./pages/Calendar";
+import UserProfile from "./pages/UserProfile";
+
 
 {/* Components */}
 import ProtectedRoute from "./components/ProtectedRoute";
-import UserProfile from "./components/UserProfile";
 import Layout from "./components/Layout";
+import { useJsApiLoader } from "@react-google-maps/api";
+
 
 {/* Styling */}
-import './styles/Styles.css';
+import './styles/EventSearch.css';
 import "./styles/App.css"
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 const App = () => {
+  const { isAuthenticated, user } = useAuth0();
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
+
+  //Load Google Maps API ONCE here
+  const libraries = ['places'];
+
+  const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+        libraries,
+  });
 
   return (
     <Router>
@@ -44,6 +58,7 @@ const App = () => {
               <Events
                 searchQuery={searchQuery}
                 locationQuery={locationQuery}
+                isLoaded={isLoaded}
               />
             }
           />

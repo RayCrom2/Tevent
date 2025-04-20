@@ -16,7 +16,6 @@ import '../styles/Slideshow.css';  // Update the path as necessary based on your
 const Slideshow = () => {
 
   const eventsUrl = `${window.location.href}events`; // Append '/events' to the current path
-  console.log(eventsUrl);
 
   const images = [
     { image: rave, 
@@ -49,7 +48,7 @@ const Slideshow = () => {
 
   
   const settings = {
-    dots: false,           // Show dots for navigation
+    dots: true,           // Show dots for navigation
     infinite: true,       // Loop the images
     speed: 1000,           // Transition speed
     slidesToShow: 1,      // Show 1 image at a time
