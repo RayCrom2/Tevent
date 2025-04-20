@@ -4,11 +4,8 @@ import { getDistanceFromLatLng } from "../utils/distanceUtils";
 import { fetchCoordinates } from "../utils/locationUtils";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from 'react-toastify';
-<<<<<<< HEAD
-=======
 import { filterByDate } from "../utils/dateUtils";
 import Fuse from "fuse.js";
->>>>>>> origin/main
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import AutocompleteInput from "../components/AutocompleteInput";
@@ -30,7 +27,6 @@ const EventSearch = ({ isLoaded }) => {
   const [favorites, setFavorites] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-<<<<<<< HEAD
   const [allEvents, setAllEvents] = useState([]);
 
   //Fecthes Events from the Database 
@@ -49,10 +45,8 @@ const EventSearch = ({ isLoaded }) => {
   }, []);
   
 
-=======
   const [searchInput, setSearchInput] = useState("");
   const [audienceFilter, setAudienceFilter] = useState("");
->>>>>>> origin/main
 
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
@@ -68,61 +62,9 @@ const EventSearch = ({ isLoaded }) => {
   const toggleFavorite = (eventId) => {
     if (!isAuthenticated){
       toast.error("Must be signed in to favorite events");
-<<<<<<< HEAD
-    }
-    else{
-    setFavorites((prev) =>
-      prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
-    );
-  }
-  };
-
-  const filterByDate = (events, filter) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-    switch (filter) {
-      case "today":
-        return events.filter(event => new Date(event.date).toDateString() === today.toDateString());
-      case "tomorrow":
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        return events.filter(event => new Date(event.date).toDateString() === tomorrow.toDateString());
-      case "this week":
-        return events.filter(event => new Date(event.date) >= startOfWeek && new Date(event.date) <= endOfWeek);
-      case "this weekend":
-        const weekendStart = new Date(startOfWeek);
-        weekendStart.setDate(startOfWeek.getDate() + 5);
-        const weekendEnd = new Date(startOfWeek);
-        weekendEnd.setDate(startOfWeek.getDate() + 6);
-        return events.filter(event => new Date(event.date) >= weekendStart && new Date(event.date) <= weekendEnd);
-      case "next week":
-        const nextWeekStart = new Date(startOfWeek);
-        nextWeekStart.setDate(startOfWeek.getDate() + 7);
-        const nextWeekEnd = new Date(nextWeekStart);
-        nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
-        return events.filter(event => new Date(event.date) >= nextWeekStart && new Date(event.date) <= nextWeekEnd);
-      default:
-        return events;
-    }
-  };
-
-  const handleSearch = () => {
-    let filtered = allEvents;
-
-    if (searchInput) {
-      filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(searchInput.toLowerCase())
-=======
     } else {
       setFavorites((prev) =>
         prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
->>>>>>> origin/main
       );
     }
   };

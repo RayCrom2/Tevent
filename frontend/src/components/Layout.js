@@ -1,16 +1,12 @@
 import React from 'react';
 import { Container, Navbar, Nav } from 'react-bootstrap';
 import { Link, useLocation } from "react-router-dom";
-<<<<<<< HEAD
 
 import { useAuth0 } from "@auth0/auth0-react"; // ✅ Import Auth0 hook
 import 'bootstrap/dist/css/bootstrap.min.css'; // import Bootstrap CSS
 import ToggleThemeButton from './ToggleThemeButton'; // ✅ correct for default export
 
-=======
-import { useAuth0 } from "@auth0/auth0-react";
 import 'bootstrap/dist/css/bootstrap.min.css';
->>>>>>> origin/main
 
 function Layout({ children }) {
   const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
