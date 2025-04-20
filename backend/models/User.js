@@ -5,6 +5,9 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, unique: true, sparse: true },
   username: { type: String, required: true, unique: true },
   picture: { type: String },
+  bioDescription: { type: String },
+  listFavorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Events" }],
+  createdEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Events" }],
 
   // Optional if using Auth0
   password: { type: String, default: "auth0" }, // for legacy/fallback only

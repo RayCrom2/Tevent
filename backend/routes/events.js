@@ -3,45 +3,55 @@ const Event = require("../models/Event");
 const User = require("../models/User");
 
 const router = express.Router();
+const checkJwt = require("../middleware/checkJwt");
 
 // Create an event
-router.post("/events", async (req, res) => {
-    try {
-        const { title, description, location, date } = req.body;
-        const newEvent = new Event({ title, description, location, date });
-        await newEvent.save();
-        res.status(201).json(newEvent);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+router.post("/", checkJwt, async (req, res) => {
+  try {
+    const { title, start, end, description, location } = req.body;
+
+    console.log("🟡 Incoming event data:", req.body);
+
+    const newEvent = new Event({ title, start, end, description, location });
+    const saved = await newEvent.save();
+
+    console.log("🟢 Event saved to DB:", saved);
+    res.status(201).json(saved);
+  } catch (err) {
+    console.error("🔴 Failed to save event:", err);
+    res.status(400).json({ error: "Failed to create event" });
+  }
 });
 
-// Mark a user as "Going" to an event
-router.post("/events/:id/attend", async (req, res) => {
-    try {
-        const { userId } = req.body;
-        const event = await Event.findById(req.params.id);
-        if (!event) return res.status(404).json({ message: "Event not found" });
+// Mark user as going
+router.post("/:id/attend", checkJwt, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
 
-        event.attendees.push(userId);
-        await event.save();
+    if (!event.attendees.includes(userId)) {
+      event.attendees.push(userId);
+      await event.save();
 
-        await User.findByIdAndUpdate(userId, { $push: { eventsGoing: event._id } });
-
-        res.json({ message: "Marked as going", event });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+      await User.findByIdAndUpdate(userId, { $push: { eventsGoing: event._id } });
     }
+
+    res.json({ message: "Marked as going", event });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Get all events
-router.get("/events", async (req, res) => {
-    try {
-        const events = await Event.find();
-        res.json(events);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// Get all events (public)
+router.get("/", async (req, res) => {
+  try {
+    const events = await Event.find();
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
+// ✅ Export the router
 module.exports = router;

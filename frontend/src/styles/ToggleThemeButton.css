@@ -13,6 +13,9 @@
   align-items: center;
   gap: 0.4rem;
   line-height: 1;
+  right:10px;
+  height:40px;
+  position: absolute;
 }
 
 .theme-toggle-btn:hover {

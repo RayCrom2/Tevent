@@ -3,7 +3,6 @@ import { FaSearch, FaHeart, FaRegHeart } from "react-icons/fa";
 import fakeEvents from "../Fakedata/fakeEvents";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from 'react-toastify';
-
 import "bootstrap/dist/css/bootstrap.min.css";
 
 
@@ -35,6 +34,24 @@ const EventSearch = () => {
   const [activeEvent, setActiveEvent] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  const [allEvents, setAllEvents] = useState([]);
+
+  //Fecthes Events from the Database 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/api/events");
+        const data = await response.json();
+        setAllEvents(data);
+        setFilteredEvents(data);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      }
+    };
+    fetchEvents();
+  }, []);
+  
+
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -96,7 +113,7 @@ const EventSearch = () => {
   };
 
   const handleSearch = () => {
-    let filtered = fakeEvents;
+    let filtered = allEvents;
 
     if (searchInput) {
       filtered = filtered.filter(event =>
