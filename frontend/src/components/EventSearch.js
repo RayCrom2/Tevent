@@ -59,15 +59,38 @@ const EventSearch = ({ isLoaded }) => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
-  const toggleFavorite = (eventId) => {
-    if (!isAuthenticated){
+  const toggleFavorite = async (eventId) => {
+    if (!isAuthenticated) {
       toast.error("Must be signed in to favorite events");
-    } else {
+      return;
+    }
+  
+    const isAlreadyFavorite = favorites.includes(eventId);
+  
+    try {
+      const method = isAlreadyFavorite ? "DELETE" : "POST";
+      const response = await fetch(`http://localhost:5001/api/users/favorites`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eventId }),
+      });
+  
+      if (!response.ok) throw new Error("Failed to update favorites");
+  
+      // Optimistically update local state
       setFavorites((prev) =>
-        prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
+        isAlreadyFavorite
+          ? prev.filter((id) => id !== eventId)
+          : [...prev, eventId]
       );
+    } catch (error) {
+      toast.error("Could not update favorites.");
+      console.error(error);
     }
   };
+  
 
   const handleUseMyLocation = () => {
     if ('geolocation' in navigator) {
@@ -101,18 +124,20 @@ const EventSearch = ({ isLoaded }) => {
   };
 
   const handleSearch = async ({ newCoordinates } = {}) => {
-    let filtered = fakeEvents;
-
+    let filtered = allEvents; // ✅ Use live data
+  
     // Title/Location text search:
     if (searchInput) {
-      const fuse = new Fuse(fakeEvents, {
+      const fuse = new Fuse(allEvents, {
         keys: ["title", "location"],
         threshold: 0.3,
       });
       const results = fuse.search(searchInput);
       filtered = results.map(result => result.item);
     }
-
+  
+    // (rest of your filters remain unchanged)
+  
     // Category filter
     if (category) {
       filtered = filtered.filter(event => event.category.toLowerCase() === category.toLowerCase());
@@ -299,7 +324,8 @@ const EventSearch = ({ isLoaded }) => {
                       </button>
                     </div>
                     <p className="card-text">
-                      <strong>Date:</strong> {event.date}
+                    <strong>Date:</strong>{" "}
+                      {event.date ? new Date(event.date).toISOString().split("T")[0] : "Unknown"}
                     </p>
                     <p className="card-text">
                       <strong>Location:</strong> {event.location}
@@ -307,7 +333,6 @@ const EventSearch = ({ isLoaded }) => {
                     <p className="card-text">
                       <strong>Audience:</strong> {event.audience || "Everyone"}
                     </p>
-                    <p className="card-text">{event.description}</p>
                   </div>
                 </div>
               </div>
@@ -319,7 +344,16 @@ const EventSearch = ({ isLoaded }) => {
         {/* RIGHT SIDE - Map */}
         <div className="col-md-4">
           <div className="map-wrapper">
-            <MapWithMarkers center={coordinates} events={filteredEvents} isLoaded={isLoaded} />
+          <MapWithMarkers
+            center={coordinates}
+            events={filteredEvents.filter(event =>
+              typeof event.lat === "number" &&
+              typeof event.lng === "number" &&
+              !isNaN(event.lat) &&
+              !isNaN(event.lng)
+            )}
+            isLoaded={isLoaded}
+          />
           </div>
         </div>
       </div>

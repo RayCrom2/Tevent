@@ -8,6 +8,12 @@ const UserSchema = new mongoose.Schema({
   bioDescription: { type: String },
   listFavorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Events" }],
   createdEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Events" }],
+  favorites: [
+    {
+      eventId: mongoose.Schema.Types.ObjectId,
+      isFavorite: { type: Boolean, default: false }
+    }
+  ],
 
   // Optional if using Auth0
   password: { type: String, default: "auth0" }, // for legacy/fallback only
