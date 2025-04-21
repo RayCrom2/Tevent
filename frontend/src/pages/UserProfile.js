@@ -3,6 +3,7 @@ import { Container } from "react-bootstrap";
 import useUserProfile from "../hooks/useUserProfile";
 import UserLocationMap from "../components/UserLocationMap";
 import "../styles/UserProfile.css";
+import { Link } from "react-router-dom";
 
 // UserProfile component displays and allows editing of user info like avatar, banner, name, username, bio, and contact info.
 const UserProfile = () => {
@@ -154,6 +155,15 @@ const UserProfile = () => {
               <button onClick={() => setIsEditing(true)} className="modal-button my-2">✏️ Edit Profile Biography</button>
             </>
           )}
+        </div>
+
+        {/* Added New Manage Events Card */}
+          <div className="profile-card">
+          <h3> Manage My Events</h3>
+          <p>View and edit the events you’re hosting or attending.</p>
+          <Link to="/manage-events" className="modal-button">
+            Go to Event Manager
+          </Link>
         </div>
 
         {/* Map section */}
