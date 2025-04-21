@@ -66,7 +66,7 @@ const fakeEvents = [
     distance: 25
   },
   {
-    id: 14,
+    id: 4,
     title: "Latin Dance Night",
     date: addDaysToDate(currentDate, 3),
     audience: "18+",
@@ -79,7 +79,7 @@ const fakeEvents = [
   },
 
   {
-    id: 15,
+    id: 5,
     title: "Live Jazz Evening",
     date: addDaysToDate(currentDate, 4),
     audience: "21+",
@@ -93,7 +93,7 @@ const fakeEvents = [
 
   // Business Event
   {
-    id: 16,
+    id: 6,
     title: "Startup Networking Mixer",
     date: addDaysToDate(currentDate, 5),
     audience: "18+",
@@ -107,7 +107,7 @@ const fakeEvents = [
 
   // Food & Drink Event
   {
-    id: 17,
+    id: 7,
     title: "Wine & Cheese Tasting",
     date: addDaysToDate(currentDate, 6),
     audience: "21+",
@@ -121,7 +121,7 @@ const fakeEvents = [
 
   // Health Event
   {
-    id: 18,
+    id: 8,
     title: "Yoga in the Park",
     date: addDaysToDate(currentDate, 7),
     audience: "Everyone",
@@ -135,7 +135,7 @@ const fakeEvents = [
 
   // More events...
   {
-    id: 4,
+    id: 9,
     title: "San Jose Tech Innovation Summit",
     date: addDaysToDate(currentDate, 8),
     audience: "18+",
@@ -147,7 +147,7 @@ const fakeEvents = [
     distance: 10
   },
   {
-    id: 5,
+    id: 10,
     title: "Silicon Valley AI Conference",
     date: addDaysToDate(currentDate, 9),
     audience: "18+",
@@ -159,7 +159,7 @@ const fakeEvents = [
     distance: 10
   },
   {
-    id: 6,
+    id: 11,
     title: "Gilroy Garlic Festival",
     date: addDaysToDate(currentDate, 0),
     audience: "Everyone",
@@ -171,7 +171,7 @@ const fakeEvents = [
     distance: 25
   },
   {
-    id: 7,
+    id: 12,
     title: "Sonoma Wine Tasting Tour",
     date: addDaysToDate(currentDate, 1),
     audience: "21+",
@@ -183,7 +183,7 @@ const fakeEvents = [
     distance: 50
   },
   {
-    id: 8,
+    id: 13,
     title: "California State Fair",
     date: addDaysToDate(currentDate, 16),
     audience: "Everyone",
@@ -195,7 +195,7 @@ const fakeEvents = [
     distance: 100
   },
   {
-    id: 9,
+    id: 14,
     title: "Lake Tahoe Winter Festival",
     date: addDaysToDate(currentDate, 1),
     audience: "18+",
@@ -207,7 +207,7 @@ const fakeEvents = [
     distance: 100
   },
   {
-    id: 10,
+    id: 15,
     title: "Santa Cruz Beach Festival",
     date: addDaysToDate(currentDate, 11),
     audience: "18+",
@@ -219,7 +219,7 @@ const fakeEvents = [
     distance: 50
   },
   {
-    id: 11,
+    id: 16,
     title: "SSU Career Fair",
     date: addDaysToDate(currentDate, 14),
     audience: "Everyone",
@@ -231,7 +231,7 @@ const fakeEvents = [
     distance: 2
   },
   {
-    id: 12,
+    id: 17,
     title: "Seawolf Fest",
     date: addDaysToDate(currentDate, 13),
     audience: "Everyone",
@@ -243,7 +243,7 @@ const fakeEvents = [
     distance: 2
   },
   {
-    id: 13,
+    id: 18,
     title: "SSU Research Symposium",
     date: addDaysToDate(currentDate, 1),
     audience: "Everyone",
@@ -255,7 +255,7 @@ const fakeEvents = [
     distance: 2
   },
   {
-    id: 14,
+    id: 19,
     title: "Fleet Week",
     date: addDaysToDate(currentDate, 8),
     audience: "Everyone",

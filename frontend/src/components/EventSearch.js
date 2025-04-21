@@ -30,6 +30,10 @@ const EventSearch = ({ isLoaded }) => {
   const [searchInput, setSearchInput] = useState("");
   const [audienceFilter, setAudienceFilter] = useState("");
 
+
+
+
+
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
     if (savedFavorites) {
@@ -38,12 +42,29 @@ const EventSearch = ({ isLoaded }) => {
   }, []);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      // Reset filters and state on logout
+      setFilteredEvents([]);
+      setFavorites([]);
+      setShowOnlyFavorites(false);
+      setSearchInput("");
+      setCategory("");
+      setDateFilter("");
+      setDistanceFilter("");
+      setAudienceFilter("");
+      setActiveEvent(null);
+      setHasSearched(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
   const toggleFavorite = (eventId) => {
     if (!isAuthenticated){
       toast.error("Must be signed in to favorite events");
+      
     } else {
       setFavorites((prev) =>
         prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
