@@ -21,7 +21,9 @@ const EventSearch = ({ isLoaded }) => {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-  const [distanceFilter, setDistanceFilter] = useState("");
+  // Replace distanceFilter default with 0 or a string:
+  // Let's use 0 to represent "no limit."
+  const [distanceFilter, setDistanceFilter] = useState(0);
   const [locationInput, setLocationInput] = useState("");
   const [activeEvent, setActiveEvent] = useState(null);
   const [favorites, setFavorites] = useState([]);
@@ -29,10 +31,6 @@ const EventSearch = ({ isLoaded }) => {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [audienceFilter, setAudienceFilter] = useState("");
-
-
-
-
 
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
@@ -43,14 +41,13 @@ const EventSearch = ({ isLoaded }) => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      // Reset filters and state on logout
       setFilteredEvents([]);
       setFavorites([]);
       setShowOnlyFavorites(false);
       setSearchInput("");
       setCategory("");
       setDateFilter("");
-      setDistanceFilter("");
+      setDistanceFilter(0);
       setAudienceFilter("");
       setActiveEvent(null);
       setHasSearched(false);
@@ -62,18 +59,17 @@ const EventSearch = ({ isLoaded }) => {
   }, [favorites]);
 
   const toggleFavorite = (eventId) => {
-    if (!isAuthenticated){
+    if (!isAuthenticated) {
       toast.error("Must be signed in to favorite events");
-      
     } else {
       setFavorites((prev) =>
-        prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
+        prev.includes(eventId) ? prev.filter((id) => id !== eventId) : [...prev, eventId]
       );
     }
   };
 
   const handleUseMyLocation = () => {
-    if ('geolocation' in navigator) {
+    if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setCoordinates({
@@ -106,30 +102,41 @@ const EventSearch = ({ isLoaded }) => {
   const handleSearch = async ({ newCoordinates } = {}) => {
     let filtered = fakeEvents;
 
-    // Title/Location text search:
+    // 1) Title/Location text search:
     if (searchInput) {
       const fuse = new Fuse(fakeEvents, {
         keys: ["title", "location"],
         threshold: 0.3,
       });
       const results = fuse.search(searchInput);
-      filtered = results.map(result => result.item);
+      filtered = results.map((result) => result.item);
     }
 
-    // Category filter
+    // 2) Category filter:
     if (category) {
-      filtered = filtered.filter(event => event.category.toLowerCase() === category.toLowerCase());
+      filtered = filtered.filter(
+        (event) => event.category.toLowerCase() === category.toLowerCase()
+      );
     }
 
-    // Date filter
+    // 3) Date filter:
     if (dateFilter) {
       filtered = filterByDate(filtered, dateFilter);
     }
 
-    // Distance filter
-    const userCoords = newCoordinates || coordinates;
-    const maxDistance = distanceFilter ? parseInt(distanceFilter) : null;
+    // 4) Audience filter:
+    if (audienceFilter) {
+      filtered = filtered.filter((event) => event.audience === audienceFilter);
+    }
+    // or use your "filterByAudience" helper:
+    filtered = filterByAudience(filtered, audienceFilter);
 
+    // 5) Distance filter:
+    const userCoords = newCoordinates || coordinates;
+    // If distanceFilter === 0, treat as "no distance limit"
+    const maxDistance = distanceFilter > 0 ? distanceFilter : null;
+
+    // If there's text in locationInput, fetch coordinates:
     if (locationInput.trim().length) {
       const coords = await fetchCoordinates(locationInput);
       if (coords) {
@@ -137,12 +144,14 @@ const EventSearch = ({ isLoaded }) => {
         userCoords.lng = coords.lng;
         setCoordinates(coords);
       } else {
-        filtered = filtered.filter(event =>
+        // If we couldn't get coords, fallback to text-based filtering
+        filtered = filtered.filter((event) =>
           event.location.toLowerCase().includes(locationInput.toLowerCase())
         );
       }
     }
 
+    // Actually filter if maxDistance is set:
     if (maxDistance) {
       filtered = filtered.filter((event) => {
         const distance = getDistanceFromLatLng(
@@ -155,25 +164,17 @@ const EventSearch = ({ isLoaded }) => {
       });
     }
 
-    if (audienceFilter) {
-      filtered = filtered.filter((event) => {
-        // Make sure your events have something like event.audience = "Everyone" or "18+" or "21+"
-        return event.audience === audienceFilter;
-      });
-      
-    }
-    filtered = filterByAudience(filtered, audienceFilter);
     setFilteredEvents(filtered);
     setHasSearched(true);
   };
 
+  // Re-run search if any filter changes:
   useEffect(() => {
-    // Re-run search if category/date/distance/audience changes
     handleSearch();
   }, [category, dateFilter, distanceFilter, audienceFilter]);
 
   const eventsToDisplay = showOnlyFavorites
-    ? filteredEvents.filter(event => favorites.includes(event.id))
+    ? filteredEvents.filter((event) => favorites.includes(event.id))
     : filteredEvents;
 
   if (!isLoaded) return <p>Loading Google Maps...</p>;
@@ -222,7 +223,12 @@ const EventSearch = ({ isLoaded }) => {
 
           {/* FILTERS */}
           <div className="d-flex mb-4 gap-3">
-            <select className="form-select" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+            {/* Date Filter */}
+            <select
+              className="form-select"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
               <option value="">Any Day</option>
               <option value="today">Today</option>
               <option value="tomorrow">Tomorrow</option>
@@ -231,17 +237,12 @@ const EventSearch = ({ isLoaded }) => {
               <option value="next week">Next Week</option>
             </select>
 
-            <select className="form-select" value={distanceFilter} onChange={(e) => setDistanceFilter(e.target.value)}>
-              <option value="">Any Distance</option>
-              <option value="2">2 miles</option>
-              <option value="5">5 miles</option>
-              <option value="10">10 miles</option>
-              <option value="25">25 miles</option>
-              <option value="50">50 miles</option>
-              <option value="100">100 miles</option>
-            </select>
-
-            <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value)}>
+            {/* Category Filter */}
+            <select
+              className="form-select"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
               <option value="">Any Category</option>
               <option value="Music">Music</option>
               <option value="Business">Business</option>
@@ -250,13 +251,41 @@ const EventSearch = ({ isLoaded }) => {
             </select>
 
             {/* Audience Filter */}
-           <select className="form-select" value={audienceFilter} onChange={(e) => setAudienceFilter(e.target.value)}>
+            <select
+              className="form-select"
+              value={audienceFilter}
+              onChange={(e) => setAudienceFilter(e.target.value)}
+            >
               <option value="">Any Audience</option>
               <option value="Everyone">Everyone</option>
               <option value="18+">18+</option>
               <option value="21+">21+</option>
-          </select>
+            </select>
+            {/* Distance Slider */}
+            
           </div>
+          <div className="distance-slider-wrapper">
+              <label htmlFor="distanceSlider" className="form-label">
+                <h5>Event Search Distance:{" "}
+                {distanceFilter === 0
+                  ? "Any"
+                  : `${distanceFilter} miles`}
+                  </h5>
+              </label>
+              <input
+                id="distanceSlider"
+                type="range"
+                className="form-range"
+                min="0"
+                max="100"  // or whatever max you want
+                value={distanceFilter}
+                onChange={(e) => {
+                  // Convert string -> number
+                  const val = parseInt(e.target.value, 10);
+                  setDistanceFilter(val);
+                }}
+              />
+            </div>
 
           {/* Favorites toggle */}
           <div className="form-check mb-3">
@@ -275,13 +304,16 @@ const EventSearch = ({ isLoaded }) => {
           {/* EVENT LIST */}
           <div className="row">
             {eventsToDisplay.map((event) => (
-              <div key={event.id} className="col-md-6 mb-4" onClick={() => setActiveEvent(event)}>
+              <div
+                key={event.id}
+                className="col-md-6 mb-4"
+                onClick={() => setActiveEvent(event)}
+              >
                 <div className="card shadow-sm">
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-start">
                       <h5
                         className="card-title"
-                        onClick={() => setActiveEvent(event)}
                         style={{ cursor: "pointer" }}
                       >
                         {event.title}
