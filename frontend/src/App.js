@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import { useAuth0 } from "@auth0/auth0-react";
+import { useJsApiLoader } from "@react-google-maps/api";
+
 
 
 {/* Pages */}
@@ -9,18 +11,21 @@ import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Calendar from "./pages/Calendar";
 import UserProfile from "./pages/UserProfile";
+import ManageEvents from "./pages/ManageEvents"; // New import
+
 
 
 {/* Components */}
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-import { useJsApiLoader } from "@react-google-maps/api";
+//import { useJsApiLoader } from "@react-google-maps/api";
 
 
 {/* Styling */}
 import './styles/EventSearch.css';
 import "./styles/App.css"
 import 'bootstrap/dist/css/bootstrap.min.css';
+import "react-toastify/dist/ReactToastify.css";
 
 
 const App = () => {
@@ -63,6 +68,17 @@ const App = () => {
             }
           />
           <Route path="/calendar" element={<Calendar />} />
+
+          {/*Added Manage Events Route here*/}
+            <Route
+            path="/manage-events"
+            element={
+              <ProtectedRoute>
+                <ManageEvents />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="*" element={<h2>Page Not Found</h2>} />
         </Routes>
       </Layout>
