@@ -324,8 +324,17 @@ const EventSearch = ({ isLoaded }) => {
                       </button>
                     </div>
                     <p className="card-text">
-                    <strong>Date:</strong>{" "}
-                      {event.date ? new Date(event.date).toISOString().split("T")[0] : "Unknown"}
+                    <strong>When:</strong>{" "}
+                    <strong>When:</strong>{" "}
+                        {event.start && event.end ? (
+                          <>
+                            {new Date(event.start).toLocaleDateString()}
+                            <br />
+                            {new Date(event.start).toLocaleTimeString()} - {new Date(event.end).toLocaleTimeString()}
+                          </>
+                        ) : (
+                          "Old events with old database model, need to delete and re add"
+                        )}
                     </p>
                     <p className="card-text">
                       <strong>Location:</strong> {event.location}

@@ -23,6 +23,7 @@ router.post("/", checkJwt, async (req, res) => {
   }
 });
 
+
 // Mark user as going
 router.post("/:id/attend", checkJwt, async (req, res) => {
   try {
