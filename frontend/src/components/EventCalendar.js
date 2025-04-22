@@ -11,7 +11,6 @@ import "@schedule-x/theme-default/dist/calendar.css";
 
 function EventCalendar() {
     const { isAuthenticated } = useUserProfile();
-
     const currentDate = new Date().toISOString().split('T')[0];
     const defaultStartTimeF = '09:00';  // Default to 9 AM if empty
     const defaultEndTimeF = '10:00'; 

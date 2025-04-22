@@ -18,6 +18,7 @@ const UserProfile = () => {
   const [bio, setBio] = useState("");
   const [contact, setContact] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [photoGallery, setPhotoGallery] = useState([]);
 
   // Load saved data from localStorage or fallback to profileData
   useEffect(() => {
@@ -165,12 +166,6 @@ const UserProfile = () => {
             Go to Event Manager
           </Link>
         </div>
-
-        {/* Map section */}
-        <div className="location-section">
-          <h3>Live Location Tracking</h3>
-          <UserLocationMap />
-        </div>
       </Container>
 
       {/* Avatar Modal with photo tools */}
@@ -200,7 +195,48 @@ const UserProfile = () => {
           </div>
         </div>
       )}
+      <Container className="photo-gallery mt-5">
+  <h3 className="mb-3">My Photo Gallery</h3>
+
+  {/* Upload Button */}
+  <label className="modal-button mb-3">
+    ➕ Add Photo
+    <input
+      type="file"
+      accept="image/*"
+      hidden
+      onChange={(e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (reader.result) {
+              setPhotoGallery((prev) => [...prev, reader.result]);
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      }}
+    />
+  </label>
+
+  {/* Grid */}
+  <div className="photo-grid">
+    {photoGallery.map((photo, index) => (
+      <div key={index} className="photo-grid-item">
+        <img
+          src={photo}
+          alt={`Uploaded ${index}`}
+          style={{ width: "100%", height: "auto", borderRadius: "8px" }}
+        />
+      </div>
+    ))}
+  </div>
+</Container>
+
     </>
+    
+    
   );
 };
 

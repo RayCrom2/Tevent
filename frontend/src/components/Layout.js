@@ -3,6 +3,7 @@ import { Container, Navbar, Nav } from 'react-bootstrap';
 import { Link, useLocation } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import TeventLogo from "../assets/images/TeventLogo.PNG"
 
 function Layout({ children }) {
   const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
@@ -15,9 +16,16 @@ function Layout({ children }) {
 
       <Navbar style={{ backgroundColor: "#35e8ca" }} expand="lg">
         <Container fluid>
-          <Navbar.Brand style={{ color: "#000000" }} as={Link} to="/">
-            Tevent
-          </Navbar.Brand>
+        <Navbar.Brand as={Link} to="/">
+  <img
+    src={TeventLogo}
+    alt="Tevent Logo"
+    height="40"
+    width="auto"
+    className="d-inline-block align-top"
+  />
+</Navbar.Brand>
+
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">

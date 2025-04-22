@@ -11,14 +11,12 @@ import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Calendar from "./pages/Calendar";
 import UserProfile from "./pages/UserProfile";
-import ManageEvents from "./pages/ManageEvents"; // New import
-
 
 
 {/* Components */}
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-//import { useJsApiLoader } from "@react-google-maps/api";
+import ManageEvents from "./components/ManageEvents"; 
 
 
 {/* Styling */}
