@@ -237,3 +237,59 @@ body {
   border-radius: 8px;
   object-fit: cover;
 }
+
+/* UserProfile.css */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);  /* Creates three equal columns */
+  gap: 10px;  /* Adjust the gap between grid items as needed */
+}
+
+.photo-grid-item {
+  /* Optional styles such as border, padding, or a fixed height/width */
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  /* For example, maintain aspect ratio if needed */
+  padding-bottom: 100%;
+}
+
+.photo-grid-item img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .photo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.circular-upload-button {
+  display: inline-flex;
+  align-items: center; /* Centers content vertically by default */
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #007bff;
+  cursor: pointer;
+  margin-left: 15px;
+}
+
+/* If further adjustment is needed within the flex container */
+.white-plus {
+  margin-top: -9px; /* Adjust the vertical offset */
+  color: white;
+  font-size: 36px;
+  line-height: 1;
+}
