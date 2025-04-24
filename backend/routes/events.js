@@ -10,6 +10,7 @@ const router = express.Router();
  */
 router.post("/events", async (req, res) => {
   try {
+    console.log("Incoming request body:", req.body); // 👈 ADD THIS
     const {
       title,
       description,
@@ -41,6 +42,7 @@ router.post("/events", async (req, res) => {
     });
 
     const savedEvent = await newEvent.save();
+    console.log("Saved to DB:", savedEvent); // 👈 ADD THIS
     res.status(201).json(savedEvent);
   } catch (err) {
     console.error("Error creating event:", err);

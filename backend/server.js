@@ -21,8 +21,7 @@ app.get('/', (req, res) => {
 app.use(express.json());
 app.use(cors());
 app.use("/auth", authRoutes);
-app.use("/api/routes", eventRoutes); // this means all /events routes are prefixed with /api
-
+app.use("/events", eventRoutes); 
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {

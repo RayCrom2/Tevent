@@ -74,6 +74,8 @@ const EventSearch = ({ isLoaded }) => {
             !isNaN(event.lat) &&
             !isNaN(event.lng)
         );
+        console.log("✅ All events from backend:", data); // 👈 Log full raw data
+        console.log("✅ Cleaned events with valid coordinates:", cleanData);
         setAllEvents(data);
         setFilteredEvents(data);      } catch (err) {
         console.error("Error loading events:", err);
@@ -380,8 +382,17 @@ const EventSearch = ({ isLoaded }) => {
         {/* RIGHT SIDE - Map */}
         <div className="col-md-4">
           <div className="map-wrapper">
-            <MapWithMarkers center={coordinates} events={filteredEvents} isLoaded={isLoaded} />
-          </div>
+          <MapWithMarkers
+  center={coordinates}
+  isLoaded={isLoaded}
+  events={filteredEvents.filter(
+    (event) =>
+      typeof event.lat === "number" &&
+      typeof event.lng === "number" &&
+      !isNaN(event.lat) &&
+      !isNaN(event.lng)
+  )}
+/>          </div>
         </div>
       </div>
 
