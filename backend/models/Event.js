@@ -7,8 +7,12 @@ const EventSchema = new mongoose.Schema({
   date: { type: Date, required: true }, // base event date
   startTime: { type: String }, // e.g., "09:00"
   endTime: { type: String },   // e.g., "17:00"
-  audience: { type: String },  // e.g., "18+"
-  category: { type: String },  // e.g., "Music"
+  audience: {
+    type: String,
+    enum: ["Everyone", "18+", "21+"], // ✅ only allowed values
+    default: "Everyone"
+  },
+    category: { type: String },  // e.g., "Music"
   lat: { type: Number },
   lng: { type: Number },
   attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]

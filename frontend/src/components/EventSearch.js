@@ -14,6 +14,12 @@ import MapWithMarkers from "../components/MapWithMarkers";
 import { filterByAudience } from "../utils/audienceUtils";
 import fakeEvents from "../Fakedata/fakeEvents";
 
+function formatDisplayDate(isoString) {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(isoString).toLocaleDateString(undefined, options);
+}
+
+
 const EventSearch = ({ isLoaded }) => {
   const { isAuthenticated } = useAuth0();
 
@@ -86,15 +92,38 @@ const EventSearch = ({ isLoaded }) => {
     fetchEvents();
   }, []);
   
-  const toggleFavorite = (eventId) => {
+  const toggleFavorite = async (eventId) => {
     if (!isAuthenticated) {
       toast.error("Must be signed in to favorite events");
-    } else {
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events/${eventId}/favorite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.sub }) // or your user's MongoDB ID
+      });
+  
+      if (!response.ok) throw new Error("Failed to toggle favorite");
+  
+      const result = await response.json();
       setFavorites((prev) =>
-        prev.includes(eventId) ? prev.filter((id) => id !== eventId) : [...prev, eventId]
+        result.favorited
+          ? [...prev, eventId]
+          : prev.filter((id) => id !== eventId)
       );
+  
+      toast.success(result.favorited ? "Added to favorites!" : "Removed from favorites");
+  
+    } catch (err) {
+      console.error("Toggle favorite error:", err);
+      toast.error("Something went wrong. Please try again.");
     }
   };
+  
 
   const handleUseMyLocation = () => {
     if ("geolocation" in navigator) {
@@ -362,7 +391,7 @@ const EventSearch = ({ isLoaded }) => {
                       </button>
                     </div>
                     <p className="card-text">
-                      <strong>Date:</strong> {event.date}
+                      <strong>Date:</strong> {formatDisplayDate(event.date)}
                     </p>
                     <p className="card-text">
                       <strong>Location:</strong> {event.location}
