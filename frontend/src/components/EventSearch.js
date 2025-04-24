@@ -172,7 +172,7 @@ const EventSearch = ({ isLoaded }) => {
     // 2) Category filter:
     if (category) {
       filtered = filtered.filter(
-        (event) => event.category.toLowerCase() === category.toLowerCase()
+        (event) => (event.category || "").toLowerCase() === category.toLowerCase()
       );
     }
 
@@ -412,16 +412,17 @@ const EventSearch = ({ isLoaded }) => {
         <div className="col-md-4">
           <div className="map-wrapper">
           <MapWithMarkers
-  center={coordinates}
-  isLoaded={isLoaded}
-  events={filteredEvents.filter(
-    (event) =>
-      typeof event.lat === "number" &&
-      typeof event.lng === "number" &&
-      !isNaN(event.lat) &&
-      !isNaN(event.lng)
-  )}
-/>          </div>
+          center={coordinates}
+          isLoaded={isLoaded}
+          events={filteredEvents.filter(
+            (event) =>
+              typeof event.lat === "number" &&
+              typeof event.lng === "number" &&
+              !isNaN(event.lat) &&
+              !isNaN(event.lng)
+          )}
+        />         
+        </div>
         </div>
       </div>
 

@@ -33,6 +33,9 @@ function EventCalendar({ isLoaded }) {
         return `${datePart} ${timeStr}`; 
       };
       
+      const formatToYMD = (dateStr) => {
+        return new Date(dateStr).toLocaleDateString('en-CA'); 
+      };
 
     const fetchEvents = async () => {
     try {
@@ -171,8 +174,6 @@ function EventCalendar({ isLoaded }) {
 
             <AutocompleteInput
             className="form-group"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
             placeholder="Enter address"
             onPlaceSelected={(place) => {
                 if (!place.geometry) return;
@@ -223,12 +224,18 @@ function EventCalendar({ isLoaded }) {
           </div>
 
         <div className="form-group-row">
-          <input
-              type="text"
-              placeholder="Category (e.g. Music)"
+        <select
+              className="form-select"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-            />
+            >
+              <option value="">Any Category</option>
+              <option value="Music">Music</option>
+              <option value="Business">Business</option>
+              <option value="Food & Drink">Food & Drink</option>
+              <option value="Health & Fitness">Health & Fitness</option>
+              <option value="N/A">N/A</option>
+            </select>
           </div>
 
           <div className="form-group">

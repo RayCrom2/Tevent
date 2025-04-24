@@ -12,7 +12,11 @@ const EventSchema = new mongoose.Schema({
     enum: ["Everyone", "18+", "21+"], // ✅ only allowed values
     default: "Everyone"
   },
-    category: { type: String },  // e.g., "Music"
+  category: {
+    type: String,
+    enum: ["Music", "Business", "Food & Drink", "Health & Fitness", "N/A"], // ✅ only allowed values
+    default: "Everyone"
+  },  
   lat: { type: Number },
   lng: { type: Number },
   attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
