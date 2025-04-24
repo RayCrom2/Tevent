@@ -1,8 +1,6 @@
 const express = require("express");
 const Event = require("../models/Event");
 const User = require("../models/User");
-const { getOrCreateUser } = require("../utils/auth");
-
 
 const router = express.Router();
 
