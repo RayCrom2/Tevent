@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@react-google-maps/api": "^2.20.6",
     "@schedule-x/react": "^2.25.0",
     "@schedule-x/theme-default": "^2.25.0",
     "dotenv": "^16.4.7",

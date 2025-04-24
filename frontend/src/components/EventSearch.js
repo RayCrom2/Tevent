@@ -31,6 +31,8 @@ const EventSearch = ({ isLoaded }) => {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [audienceFilter, setAudienceFilter] = useState("");
+  const [allEvents, setAllEvents] = useState([]);
+
 
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
@@ -58,6 +60,30 @@ const EventSearch = ({ isLoaded }) => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/events`);
+        if (!response.ok) throw new Error("Failed to fetch events");
+        const data = await response.json();
+        const cleanData = data.filter(
+          (event) =>
+            typeof event.lat === "number" &&
+            typeof event.lng === "number" &&
+            !isNaN(event.lat) &&
+            !isNaN(event.lng)
+        );
+        setAllEvents(data);
+        setFilteredEvents(data);      } catch (err) {
+        console.error("Error loading events:", err);
+        toast.error("Failed to load events from server.");
+      }
+    };
+  
+    fetchEvents();
+  }, []);
+  
   const toggleFavorite = (eventId) => {
     if (!isAuthenticated) {
       toast.error("Must be signed in to favorite events");
@@ -100,7 +126,7 @@ const EventSearch = ({ isLoaded }) => {
   };
 
   const handleSearch = async ({ newCoordinates } = {}) => {
-    let filtered = fakeEvents;
+    let filtered = allEvents;
 
     // 1) Title/Location text search:
     if (searchInput) {

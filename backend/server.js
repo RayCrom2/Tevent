@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const eventRoutes = require('./routes/events');
+
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -19,6 +21,8 @@ app.get('/', (req, res) => {
 app.use(express.json());
 app.use(cors());
 app.use("/auth", authRoutes);
+app.use("/api/routes", eventRoutes); // this means all /events routes are prefixed with /api
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {

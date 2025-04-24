@@ -122,6 +122,17 @@
     border: 1px solid #ccc;
   }
   
+  .event-description-input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    resize: vertical;
+    font-family: inherit;
+  }
+  
+  
   .add-event-btn {
     background-color: #0066ff;
     color: white;
@@ -131,9 +142,24 @@
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s ease;
+    margin-bottom: 1rem;
   }
   
   .add-event-btn:hover {
     background-color: #0052cc;
+  }
+
+  .cancel-event-btn {
+    background-color: #0066ff;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: flex-end;
+    float: right;
   }
   
