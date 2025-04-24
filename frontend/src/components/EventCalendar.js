@@ -72,8 +72,7 @@ function EventCalendar({ isLoaded }) {
                   </div>`;
         }
       });
-      
-      
+           
 
       useEffect(() => {
         if (!calendar?.events?.set) return;
@@ -108,7 +107,7 @@ function EventCalendar({ isLoaded }) {
   
 
     try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
         method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEvent)

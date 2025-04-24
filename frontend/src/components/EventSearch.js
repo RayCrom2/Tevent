@@ -70,7 +70,7 @@ const EventSearch = ({ isLoaded }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events`);
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
         const cleanData = data.filter(
