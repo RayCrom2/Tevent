@@ -4,44 +4,91 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-// Create an event
+/**
+ * @route   POST /api/events
+ * @desc    Create a new event
+ */
 router.post("/events", async (req, res) => {
-    try {
-        const { title, description, location, date } = req.body;
-        const newEvent = new Event({ title, description, location, date });
-        await newEvent.save();
-        res.status(201).json(newEvent);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+  try {
+    console.log("Incoming request body:", req.body); // 👈 ADD THIS
+    const {
+      title,
+      description,
+      location,
+      audience,
+      category,
+      lat,
+      lng,
+      date,
+      startTime,
+      endTime,
+    } = req.body;
+
+    if (!title || !location || !date) {
+      return res.status(400).json({ error: "Title, location, and date are required." });
     }
+
+    const newEvent = new Event({
+      title,
+      description,
+      location,
+      date: new Date(date),
+      audience,
+      category,
+      lat,
+      lng,
+      startTime,
+      endTime,
+    });
+
+    const savedEvent = await newEvent.save();
+    console.log("Saved to DB:", savedEvent); // 👈 ADD THIS
+    res.status(201).json(savedEvent);
+  } catch (err) {
+    console.error("Error creating event:", err);
+    res.status(500).json({ error: "Server error creating event." });
+  }
 });
 
-// Mark a user as "Going" to an event
+/**
+ * @route   POST /api/events/:id/attend
+ * @desc    Mark a user as attending an event
+ */
 router.post("/events/:id/attend", async (req, res) => {
-    try {
-        const { userId } = req.body;
-        const event = await Event.findById(req.params.id);
-        if (!event) return res.status(404).json({ message: "Event not found" });
+  try {
+    const { userId } = req.body;
 
-        event.attendees.push(userId);
-        await event.save();
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
 
-        await User.findByIdAndUpdate(userId, { $push: { eventsGoing: event._id } });
+    if (!event.attendees.includes(userId)) {
+      event.attendees.push(userId);
+      await event.save();
 
-        res.json({ message: "Marked as going", event });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: { eventsGoing: event._id },
+      });
     }
+
+    res.json({ message: "Marked as going", event });
+  } catch (err) {
+    console.error("Error marking as attending:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Get all events
+/**
+ * @route   GET /api/events
+ * @desc    Fetch all events
+ */
 router.get("/events", async (req, res) => {
-    try {
-        const events = await Event.find();
-        res.json(events);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+  try {
+    const events = await Event.find();
+    res.json(events);
+  } catch (err) {
+    console.error("Error fetching events:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

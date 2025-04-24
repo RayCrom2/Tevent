@@ -34,11 +34,13 @@ const App = () => {
   //Load Google Maps API ONCE here
   const libraries = ['places'];
 
-  const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-        libraries,
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    libraries: ['places'],
   });
-
+  
+  if (loadError) console.error("Google Maps load error:", loadError);
+  
   return (
     <Router>
       <Layout>
@@ -65,7 +67,7 @@ const App = () => {
               />
             }
           />
-          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/calendar" element={<Calendar isLoaded={isLoaded} />} />
 
           {/*Added Manage Events Route here*/}
             <Route
