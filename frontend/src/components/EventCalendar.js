@@ -57,7 +57,8 @@ function EventCalendar({ isLoaded }) {
       });
       
   
-
+    const calendarRef = useRef(null);
+    const [calendarInitialized, setCalendarInitialized] = useState(false);      
     useEffect(() => {
         const fetchEvents = async () => {
           try {
