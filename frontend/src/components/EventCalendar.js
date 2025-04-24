@@ -10,55 +10,89 @@ import useUserProfile from "../hooks/useUserProfile";
 import "@schedule-x/theme-default/dist/calendar.css";
 
 function EventCalendar({ isLoaded }) {
-  const { isAuthenticated } = useUserProfile();
-  const [showAddEvent, setShowAddEvent] = useState(false);
-  const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
-  const [audience, setAudience] = useState('');
-  const [category, setCategory] = useState('');
-  const [lat, setLat] = useState('');
-  const [lng, setLng] = useState('');
-  const [title, setTitle] = useState('');
-  const [start, setStart] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [end, setEnd] = useState('');
+    const { isAuthenticated } = useUserProfile();
+    const [showAddEvent, setShowAddEvent] = useState(false);
+    const [description, setDescription] = useState('');
+    const [location, setLocation] = useState('');
+    const [audience, setAudience] = useState('');
+    const [category, setCategory] = useState('');
+    const [lat, setLat] = useState('');
+    const [lng, setLng] = useState('');
+    const [title, setTitle] = useState('');
+    const [start, setStart] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
+    const [end, setEnd] = useState('');
+    const [events, setEvents] = useState([]);
+    const currentDate = new Date().toISOString().split('T')[0];
 
-  const currentDate = new Date().toISOString().split('T')[0];
-  const defaultStartTimeF = '09:00';
-  const defaultEndTimeF = '10:00';
+    const defaultStartTimeF = '09:00';
+    const defaultEndTimeF = '17:00';
 
-  const calendarEvents = fakeEvents.map(event => ({
-    id: event.id,
-    title: event.title,
-    start: `${event.date} ${defaultStartTimeF}`,
-    end: `${event.date} ${defaultEndTimeF}`,
-    metadata: {
-      description: event.description
-    }
-  }));
+    const formatDate = (date) => {
+        // Handles both strings and Date objects safely
+        return new Date(date).toISOString().split("T")[0];
+      };
+      
+      const calendarEvents = events.map(event => ({
+        id: event._id,
+        title: event.title,
+        start: `${formatDate(event.date)}T${event.startTime || "09:00"}:00`,
+        end: `${formatDate(event.date)}T${event.endTime || "17:00"}:00`,
+        metadata: {
+          description: event.description
+        }
+      }));
+    console.log("📆 Formatted calendarEvents for ScheduleX:", calendarEvents);
 
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      title: "test event",
-      start: "2025-03-28 02:00",
-      end: "2025-03-30 16:00"
-    }
-  ]);
+    const calendar = useCalendarApp({
+        views: [createViewWeek(), createViewMonthGrid()],
+        selectedDate: currentDate,
+        eventTooltipRenderer: ({ event }) => {
+          return `<div style="padding: 6px; max-width: 200px;">
+                    <strong>${event.title}</strong><br/>
+                    <span>${event.metadata?.description || 'No description'}</span>
+                  </div>`;
+        }
+      });
+      
+  
 
-  const calendar = useCalendarApp({
-    views: [createViewWeek(), createViewMonthGrid()],
-    events: calendarEvents,
-    selectedDate: currentDate,
-    eventTooltipRenderer: ({ event }) => {
-      return `<div style="padding: 6px; max-width: 200px;">
-                <strong>${event.title}</strong><br/>
-                <span>${event.description || 'No description'}</span>
-              </div>`;
-    }
-  });
+    useEffect(() => {
+        const fetchEvents = async () => {
+          try {
+            console.log("🌐 Fetching events from:", `${process.env.REACT_APP_BACKEND_URL}/api/events`);
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events`);
+            if (!response.ok) throw new Error("Failed to fetch events");
+      
+            const data = await response.json();
+            console.log("✅ Raw events from backend:", data);
+            setEvents(data);
+      
+            const formattedEvents = data.map(event => ({
+              id: event._id,
+              title: event.title,
+              start: `${formatDate(event.date)}T${event.startTime || "09:00"}:00`,
+              end: `${formatDate(event.date)}T${event.endTime || "17:00"}:00`,
+              metadata: {
+                description: event.description
+              }
+            }));
+      
+            console.log("📆 Setting formatted events:", formattedEvents);
+            calendar.events.set(formattedEvents); // ✅ THIS MAKES IT WORK
+      
+          } catch (err) {
+            console.error("Error loading events:", err);
+            toast.error("Failed to load calendar events.");
+          }
+        };
+      
+        fetchEvents();
+      }, [calendar]);
+      
 
+  
   const handleButtonClick = () => {
     setShowAddEvent(true);
   };
@@ -85,7 +119,7 @@ function EventCalendar({ isLoaded }) {
 
 
     try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/events`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events`, {
         method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEvent)
@@ -215,7 +249,7 @@ function EventCalendar({ isLoaded }) {
           </div>
 
           <div className="button-row">
-            <button className="add-event-btn" onClick={handleAddEvent}>✅ Submit Event</button>
+            <button className="add-event-btn" onClick={handleAddEvent}> Submit Event</button>
             <button className="cancel-event-btn" onClick={() => setShowAddEvent(false)}>Cancel</button>
           </div>
         </div>
