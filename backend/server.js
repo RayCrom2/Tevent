@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 app.use(express.json());
 app.use(cors());
 app.use("/auth", authRoutes);
-app.use("api/", eventRoutes); 
+app.use("/api", eventRoutes); 
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {

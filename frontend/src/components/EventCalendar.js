@@ -85,8 +85,8 @@ function EventCalendar({ isLoaded }) {
 
 
     try {
-        const response = await fetch("https://tevent.onrender.com/api/events", {
-          method: "POST",
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/events`, {
+        method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEvent)
         });
