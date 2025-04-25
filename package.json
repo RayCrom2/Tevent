@@ -6,6 +6,6 @@
     "dotenv": "^16.4.7",
     "mogodb": "^0.0.1-security",
     "mongodb": "^4.17.2",
-    "mongoose": "^8.12.2"
+    "mongoose": "^6.13.8"
   }
 }
