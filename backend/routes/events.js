@@ -91,4 +91,48 @@ router.get("/events", async (req, res) => {
   }
 });
 
+
+// Toggle favorite status for an event
+router.post("/events/:id/favorite", async (req, res) => {
+  const { userId } = req.body; // user.sub from frontend
+  try {
+    const user = await getOrCreateUser({ sub: userId });
+
+    const eventId = req.params.id;
+    const alreadyFavorited = user.favorites.includes(eventId);
+
+    if (alreadyFavorited) {
+      user.favorites.pull(eventId);
+    } else {
+      user.favorites.push(eventId);
+    }
+
+    await user.save();
+    res.json({ success: true, favorited: !alreadyFavorited });
+
+  } catch (err) {
+    console.error("Error syncing Auth0 user:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+const getOrCreateUser = async (auth0User) => {
+  const auth0Id = auth0User.sub;
+
+  let user = await User.findOne({ auth0Id });
+  if (!user) {
+    user = await User.create({
+      auth0Id,
+      name: auth0User.name || "",
+      email: auth0User.email || ""
+    });
+    console.log("🆕 New user created in MongoDB:", user);
+  }
+
+  return user;
+};
+
+module.exports = { getOrCreateUser };
+
 module.exports = router;

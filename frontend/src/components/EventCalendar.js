@@ -24,79 +24,71 @@ function EventCalendar({ isLoaded }) {
     const [endTime, setEndTime] = useState('');
     const [end, setEnd] = useState('');
     const [events, setEvents] = useState([]);
-    const currentDate = new Date().toISOString().split('T')[0];
-
+    const currentDate = new Date().toLocaleDateString('en-CA');
     const defaultStartTimeF = '09:00';
     const defaultEndTimeF = '17:00';
-
-    const formatDate = (date) => {
-        // Handles both strings and Date objects safely
-        return new Date(date).toISOString().split("T")[0];
+  
+    const formatForScheduleX = (dateStr, timeStr = '09:00') => {
+        const datePart = new Date(dateStr).toLocaleDateString('en-CA');
+        return `${datePart} ${timeStr}`; 
       };
       
-      const calendarEvents = events.map(event => ({
-        id: event._id,
-        title: event.title,
-        start: `${formatDate(event.date)}T${event.startTime || "09:00"}:00`,
-        end: `${formatDate(event.date)}T${event.endTime || "17:00"}:00`,
-        metadata: {
-          description: event.description
-        }
-      }));
-    console.log("📆 Formatted calendarEvents for ScheduleX:", calendarEvents);
+      const formatToYMD = (dateStr) => {
+        return new Date(dateStr).toLocaleDateString('en-CA'); 
+      };
 
-    const calendar = useCalendarApp({
-        views: [createViewWeek(), createViewMonthGrid()],
-        selectedDate: currentDate,
-        eventTooltipRenderer: ({ event }) => {
-          return `<div style="padding: 6px; max-width: 200px;">
-                    <strong>${event.title}</strong><br/>
-                    <span>${event.metadata?.description || 'No description'}</span>
-                  </div>`;
-        }
-      });
-      
-  
-    const calendarRef = useRef(null);
-    const [calendarInitialized, setCalendarInitialized] = useState(false);      
-    useEffect(() => {
-        const fetchEvents = async () => {
-          try {
-            console.log("🌐 Fetching events from:", `${process.env.REACT_APP_BACKEND_URL}api/events`);
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
-            if (!response.ok) throw new Error("Failed to fetch events");
-      
-            const data = await response.json();
-            console.log("✅ Raw events from backend:", data);
-            setEvents(data);
-      
-            const formattedEvents = data.map(event => ({
+    const fetchEvents = async () => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
+        if (!response.ok) throw new Error("Failed to fetch events");
+
+        const data = await response.json();
+        console.log("✅ Raw events from backend:", data);
+        const formattedEvents = data.map(event => {
+            console.log("📅 Formatting event:", event);
+            return {
               id: event._id,
               title: event.title,
-              start: `${formatDate(event.date)}T${event.startTime || "09:00"}:00`,
-              end: `${formatDate(event.date)}T${event.endTime || "17:00"}:00`,
+              start: formatForScheduleX(event.date, event.startTime || defaultStartTimeF),
+              end: formatForScheduleX(event.date, event.endTime || defaultEndTimeF),
               metadata: {
                 description: event.description
               }
-            }));
+            };
+          });
+
+        calendar.events.set(formattedEvents);
+    } catch (err) {
+        console.error("❌ Error loading or formatting events:", err);
+        toast.error("Failed to load calendar events.");
+    }
+    };
       
-            console.log("📆 Setting formatted events:", formattedEvents);
-            calendar.events.set(formattedEvents); // ✅ THIS MAKES IT WORK
+      const calendar = useCalendarApp({
+        views: [createViewWeek(), createViewMonthGrid()],
+        events: events,
+        selectedDate: currentDate,
+        eventTooltipRenderer: ({ events }) => {
+          return `<div style="padding: 6px; max-width: 200px;">
+                    <strong>${events.title}</strong><br/>
+                    <span>${events.metadata?.description || 'No description'}</span>
+                  </div>`;
+        }
+      });
+           
+
+      useEffect(() => {
+        if (!calendar?.events?.set) return;
       
-          } catch (err) {
-            console.error("Error loading events:", err);
-            toast.error("Failed to load calendar events.");
-          }
-        };
-      
+        console.log("📅 Fetching events on mount...");
         fetchEvents();
       }, [calendar]);
       
 
-  
-  const handleButtonClick = () => {
-    setShowAddEvent(true);
-  };
+
+
+
+
 
   const handleAddEvent = async () => {
     if (!title || !start || !end || !location || !lat || !lng) {
@@ -111,13 +103,11 @@ function EventCalendar({ isLoaded }) {
       category,
       lat,
       lng,
-      date: start, // base date field used in your model
+      date: formatToYMD(start),
       startTime,
       endTime,
     };
   
-    console.log("Submitting new event:", newEvent); // ✅ Add this
-
 
     try {
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
@@ -131,15 +121,7 @@ function EventCalendar({ isLoaded }) {
       const savedEvent = await response.json();
   
       // Add the event to the calendar view
-      calendar.events.add({
-        id: savedEvent._id, // from MongoDB
-        title: savedEvent.title,
-        start: `${savedEvent.date}T${savedEvent.startTime || '09:00'}`,
-        end: `${savedEvent.date}T${savedEvent.endTime || '17:00'}`,
-        metadata: {
-          description: savedEvent.description
-        }
-      });
+      await fetchEvents(); // refresh the entire calendar
   
       toast.success("Event successfully added!");
   
@@ -162,6 +144,12 @@ function EventCalendar({ isLoaded }) {
     }
   };
   
+
+  const handleButtonClick = () => {
+    setShowAddEvent(true);
+  };
+
+
 
   return (
     <div>
@@ -186,8 +174,6 @@ function EventCalendar({ isLoaded }) {
 
             <AutocompleteInput
             className="form-group"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
             placeholder="Enter address"
             onPlaceSelected={(place) => {
                 if (!place.geometry) return;
@@ -225,18 +211,31 @@ function EventCalendar({ isLoaded }) {
           </div>
 
           <div className="form-group-row">
-            <input
-              type="text"
-              placeholder="Audience (e.g. 18+)"
+            <select
+              className="form-select"
               value={audience}
               onChange={(e) => setAudience(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Category (e.g. Music)"
+            >
+              <option value="">Any Audience</option>
+              <option value="Everyone">Everyone</option>
+              <option value="18+">18+</option>
+              <option value="21+">21+</option>
+            </select>
+          </div>
+
+        <div className="form-group-row">
+        <select
+              className="form-select"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-            />
+            >
+              <option value="">Any Category</option>
+              <option value="Music">Music</option>
+              <option value="Business">Business</option>
+              <option value="Food & Drink">Food & Drink</option>
+              <option value="Health & Fitness">Health & Fitness</option>
+              <option value="N/A">N/A</option>
+            </select>
           </div>
 
           <div className="form-group">
@@ -256,7 +255,11 @@ function EventCalendar({ isLoaded }) {
         </div>
       )}
 
-      <ScheduleXCalendar calendarApp={calendar} />
+
+        <ScheduleXCalendar
+        calendarApp={calendar}    
+
+        />
     </div>
   );
 }
