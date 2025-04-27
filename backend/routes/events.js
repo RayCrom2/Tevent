@@ -91,30 +91,38 @@ router.get("/events", async (req, res) => {
   }
 });
 
+// server/routes/userRoutes.js
+router.post('/api/users/favorites', async (req, res) => {
+  const { auth0Id, eventId } = req.body;
 
-// Toggle favorite status for an event
-router.post("/events/:id/favorite", async (req, res) => {
-  const { userId } = req.body; // user.sub from frontend
   try {
-    const user = await getOrCreateUser({ sub: userId });
+    const user = await User.findOne({ auth0Id });
 
-    const eventId = req.params.id;
+    if (!user) return res.status(404).json({ message: "User not found" });
+
     const alreadyFavorited = user.favorites.includes(eventId);
 
     if (alreadyFavorited) {
+      // Remove from favorites
       user.favorites.pull(eventId);
     } else {
+      // Add to favorites
       user.favorites.push(eventId);
     }
 
     await user.save();
-    res.json({ success: true, favorited: !alreadyFavorited });
 
-  } catch (err) {
-    console.error("Error syncing Auth0 user:", err);
-    res.status(500).json({ error: "Server error" });
+    res.json({
+      updatedFavorites: user.favorites,
+      message: alreadyFavorited ? "Removed from favorites!" : "Added to favorites!"
+    });
+
+  } catch (error) {
+    console.error("Error toggling favorite:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 const getOrCreateUser = async (auth0User) => {

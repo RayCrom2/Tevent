@@ -21,7 +21,7 @@ function formatDisplayDate(isoString) {
 
 
 const EventSearch = ({ isLoaded }) => {
-  const { isAuthenticated } = useAuth0();
+  const { user, isAuthenticated } = useAuth0(); // Make sure to destructure `user` from useAuth0
 
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -70,7 +70,7 @@ const EventSearch = ({ isLoaded }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events`);
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
         const cleanData = data.filter(
@@ -92,6 +92,7 @@ const EventSearch = ({ isLoaded }) => {
     fetchEvents();
   }, []);
   
+
   const toggleFavorite = async (eventId) => {
     if (!isAuthenticated) {
       toast.error("Must be signed in to favorite events");
@@ -99,30 +100,32 @@ const EventSearch = ({ isLoaded }) => {
     }
   
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events/${eventId}/favorite`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/favorites`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: user.sub }) // or your user's MongoDB ID
+        body: JSON.stringify({
+          auth0Id: user.sub, // Sending the Auth0 user ID
+          eventId,
+        }),
       });
   
       if (!response.ok) throw new Error("Failed to toggle favorite");
   
       const result = await response.json();
-      setFavorites((prev) =>
-        result.favorited
-          ? [...prev, eventId]
-          : prev.filter((id) => id !== eventId)
-      );
   
-      toast.success(result.favorited ? "Added to favorites!" : "Removed from favorites");
+      // Update local favorites state based on server response
+      setFavorites(result.updatedFavorites);
+  
+      toast.success(result.message);
   
     } catch (err) {
       console.error("Toggle favorite error:", err);
       toast.error("Something went wrong. Please try again.");
     }
   };
+  
   
 
   const handleUseMyLocation = () => {
