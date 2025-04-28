@@ -35,4 +35,6 @@ router.post('/api/users/favorites', async (req, res) => {
       res.status(500).json({ message: "Server error" });
     }
   });
+
+  module.exports = router;
   
