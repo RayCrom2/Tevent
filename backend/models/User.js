@@ -42,7 +42,7 @@ const UserSchema = new mongoose.Schema({
   eventsGoing: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
   pastEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }]
 });
 
 // Safe export for dev environments

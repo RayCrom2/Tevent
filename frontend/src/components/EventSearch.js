@@ -117,7 +117,6 @@ const EventSearch = ({ isLoaded }) => {
   
       // Update local favorites state based on server response
       setFavorites(result.updatedFavorites);
-  
       toast.success(result.message);
   
     } catch (err) {
@@ -125,6 +124,24 @@ const EventSearch = ({ isLoaded }) => {
       toast.error("Something went wrong. Please try again.");
     }
   };
+  
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!isAuthenticated || !user) return;
+  
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/favorites?auth0Id=${user.sub}`);
+        if (!response.ok) throw new Error("Failed to fetch favorites");
+        const data = await response.json();
+        setFavorites(data.favorites.map(fav => fav._id || fav)); // depends if your API returns full event or IDs
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+      }
+    };
+  
+    fetchFavorites();
+  }, [isAuthenticated, user]);
   
   
 
