@@ -106,7 +106,7 @@ const EventSearch = ({ isLoaded }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          auth0Id: user.sub, // Sending the Auth0 user ID
+          auth0Id: user.sub, 
           eventId,
         }),
       });
@@ -115,7 +115,6 @@ const EventSearch = ({ isLoaded }) => {
   
       const result = await response.json();
   
-      // Update local favorites state based on server response
       setFavorites(result.updatedFavorites);
       toast.success(result.message);
   

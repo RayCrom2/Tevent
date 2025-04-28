@@ -158,6 +158,5 @@ const getOrCreateUser = async (auth0User) => {
   return user;
 };
 
-module.exports = { getOrCreateUser };
-
+router.getOrCreateUser = getOrCreateUser;
 module.exports = router;
