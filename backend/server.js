@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const eventRoutes = require('./routes/eventRoutes');
-const userRoutes = require('./routes/userRoutes');
+const eventRoutes = require('./routes/events');
+const userRoutes = require('./routes/users');
 const authRoutes = require("./routes/auth");
 
 
