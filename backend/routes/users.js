@@ -33,4 +33,9 @@ router.post('/favorites', async (req, res) => {
   }
 });
 
+router.get('/favorites', (req, res) => {
+    res.send('GET favorites route is working!');
+  });
+  
+
 module.exports = router;
