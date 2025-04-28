@@ -124,6 +124,23 @@ router.post('/api/users/favorites', async (req, res) => {
 });
 
 
+router.get('/api/users/favorites', async (req, res) => {
+  const { auth0Id } = req.query; // assuming you pass auth0Id as a query param
+
+  try {
+    const user = await User.findOne({ auth0Id }).populate('favorites'); // populate if favorites are event refs
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ favorites: user.favorites });
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+
 
 const getOrCreateUser = async (auth0User) => {
   const auth0Id = auth0User.sub;
