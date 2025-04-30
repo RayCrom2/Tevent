@@ -83,7 +83,9 @@ const EventSearch = ({ isLoaded }) => {
         console.log("✅ All events from backend:", data); // 👈 Log full raw data
         console.log("✅ Cleaned events with valid coordinates:", cleanData);
         setAllEvents(data);
-        setFilteredEvents(data);      } catch (err) {
+        setFilteredEvents(data);      
+      } 
+      catch (err) {
         console.error("Error loading events:", err);
         toast.error("Failed to load events from server.");
       }

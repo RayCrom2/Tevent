@@ -92,7 +92,7 @@ router.get("/events", async (req, res) => {
 });
 
 
-router.get('/api/users/favorites', async (req, res) => {
+router.get('/users/favorites', async (req, res) => {
   const { auth0Id } = req.query; // assuming you pass auth0Id as a query param
 
   try {
