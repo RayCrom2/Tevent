@@ -7,12 +7,15 @@ import { toast } from 'react-toastify';
 import { filterByDate } from "../utils/dateUtils";
 import Fuse from "fuse.js";
 import "bootstrap/dist/css/bootstrap.min.css";
+import '../styles/EventSearch.css'; 
+
 
 import AutocompleteInput from "../components/AutocompleteInput";
 import Modal from "../components/Modal";
 import MapWithMarkers from "../components/MapWithMarkers";
 import { filterByAudience } from "../utils/audienceUtils";
 import fakeEvents from "../Fakedata/fakeEvents";
+
 
 function formatDisplayDate(isoString) {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };

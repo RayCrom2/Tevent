@@ -8,9 +8,12 @@ import fakeEvents from '../Fakedata/fakeEvents';
 import useUserProfile from "../hooks/useUserProfile";
 
 import "@schedule-x/theme-default/dist/calendar.css";
+import { useTheme } from '../context/ThemeContext'; // ✅ adjust path as needed
+
 
 function EventCalendar({ isLoaded }) {
     const { isAuthenticated } = useUserProfile();
+    const { theme } = useTheme(); // will be 'light' or 'dark'
     const [showAddEvent, setShowAddEvent] = useState(false);
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState('');
@@ -75,6 +78,16 @@ function EventCalendar({ isLoaded }) {
                   </div>`;
         }
       });
+
+
+
+    // ✅ React to theme changes and set the calendar theme dynamically
+  useEffect(() => {
+    if (calendar?.setTheme) {
+      calendar.setTheme(theme); // 👈 this is the key
+      console.log("🌓 ScheduleX theme set to:", theme);
+    }
+  }, [theme, calendar]);
            
 
       useEffect(() => {
