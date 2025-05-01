@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaHeart, FaRegHeart } from "react-icons/fa";
 import { getDistanceFromLatLng } from "../utils/distanceUtils";
 import { fetchCoordinates } from "../utils/locationUtils";
 import { useAuth0 } from "@auth0/auth0-react";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { filterByDate } from "../utils/dateUtils";
 import Fuse from "fuse.js";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -12,23 +13,18 @@ import AutocompleteInput from "../components/AutocompleteInput";
 import Modal from "../components/Modal";
 import MapWithMarkers from "../components/MapWithMarkers";
 import { filterByAudience } from "../utils/audienceUtils";
-import fakeEvents from "../Fakedata/fakeEvents";
 
 function formatDisplayDate(isoString) {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  const options = { year: "numeric", month: "long", day: "numeric" };
   return new Date(isoString).toLocaleDateString(undefined, options);
 }
 
-
 const EventSearch = ({ isLoaded }) => {
-  const { isAuthenticated } = useAuth0();
-
+  const { isAuthenticated, user } = useAuth0();
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-  // Replace distanceFilter default with 0 or a string:
-  // Let's use 0 to represent "no limit."
   const [distanceFilter, setDistanceFilter] = useState(0);
   const [locationInput, setLocationInput] = useState("");
   const [activeEvent, setActiveEvent] = useState(null);
@@ -39,7 +35,6 @@ const EventSearch = ({ isLoaded }) => {
   const [audienceFilter, setAudienceFilter] = useState("");
   const [allEvents, setAllEvents] = useState([]);
 
-
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
     if (savedFavorites) {
@@ -47,6 +42,7 @@ const EventSearch = ({ isLoaded }) => {
     }
   }, []);
 
+ 
   useEffect(() => {
     if (!isAuthenticated) {
       setFilteredEvents([]);
@@ -72,26 +68,53 @@ const EventSearch = ({ isLoaded }) => {
       try {
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
         if (!response.ok) throw new Error("Failed to fetch events");
+  
         const data = await response.json();
-        const cleanData = data.filter(
+  
+        //Normalize _id to id
+        const normalized = data.map((event) => ({
+          ...event,
+          id: event._id || event.id,
+        }));
+  
+        //Filter events with valid coordinates
+        const cleanData = normalized.filter(
           (event) =>
             typeof event.lat === "number" &&
             typeof event.lng === "number" &&
             !isNaN(event.lat) &&
             !isNaN(event.lng)
         );
-        console.log("✅ All events from backend:", data); // 👈 Log full raw data
-        console.log("✅ Cleaned events with valid coordinates:", cleanData);
-        setAllEvents(data);
-        setFilteredEvents(data);      } catch (err) {
-        console.error("Error loading events:", err);
+  
+        //Set state
+        setAllEvents(normalized);      // Full list including all event data
+        setFilteredEvents(cleanData);  // Cleaned list for rendering/map
+  
+        console.log("All events from backend:", normalized);     // Log full data
+        console.log("Cleaned events with valid coordinates:", cleanData); // Log filtered
+  
+      } catch (err) {
+        console.error(" Error loading events:", err);
         toast.error("Failed to load events from server.");
       }
     };
   
     fetchEvents();
   }, []);
-  
+
+
+  const handleAttendEvent = (event) => {
+    const myEvents = JSON.parse(localStorage.getItem("myEvents")) || [];
+    if (myEvents.find((e) => e.id === event.id)) {
+      toast.info("You already added this event!");
+      return;
+    }
+    myEvents.push(event);
+    localStorage.setItem("myEvents", JSON.stringify(myEvents));
+    toast.success("Event added to your profile!");
+  };
+
+
   const toggleFavorite = async (eventId) => {
     if (!isAuthenticated) {
       toast.error("Must be signed in to favorite events");
@@ -129,20 +152,31 @@ const EventSearch = ({ isLoaded }) => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setCoordinates({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-          handleSearch({
-            newCoordinates: {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            },
-          });
+          const { latitude, longitude } = position.coords;
+  
+          const userCoords = {
+            lat: latitude,
+            lng: longitude,
+          };
+  
+          setCoordinates(userCoords);
+          handleSearch({ newCoordinates: userCoords });
         },
         (error) => {
-          console.error(error);
-          toast.error("Unable to retrieve your location.");
+          console.error("Geolocation error:", error);
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              toast.error("Permission denied. Please allow location access.");
+              break;
+            case error.POSITION_UNAVAILABLE:
+              toast.error("Location information is unavailable.");
+              break;
+            case error.TIMEOUT:
+              toast.error("Location request timed out.");
+              break;
+            default:
+              toast.error("Unable to retrieve your location.");
+          }
         }
       );
     } else {
@@ -156,83 +190,76 @@ const EventSearch = ({ isLoaded }) => {
     }
   };
 
-  const handleSearch = async ({ newCoordinates } = {}) => {
-    let filtered = allEvents;
 
-    // 1) Title/Location text search:
-    if (searchInput) {
-      const fuse = new Fuse(fakeEvents, {
-        keys: ["title", "location"],
-        threshold: 0.3,
-      });
-      const results = fuse.search(searchInput);
-      filtered = results.map((result) => result.item);
-    }
+const handleSearch = async ({ newCoordinates } = {}) => {
+  let filtered = allEvents;
 
-    // 2) Category filter:
-    if (category) {
-      filtered = filtered.filter(
-        (event) => (event.category || "").toLowerCase() === category.toLowerCase()
+  // 1) Title/Location text search
+  if (searchInput.trim()) {
+    const fuse = new Fuse(allEvents, {
+      keys: ["title", "location"],
+      threshold: 0.3,
+    });
+    const results = fuse.search(searchInput);
+    filtered = results.map((r) => r.item);
+  }
+
+  // 2) Category filter
+  if (category) {
+    filtered = filtered.filter(
+      (event) => (event.category || "").toLowerCase() === category.toLowerCase()
+    );
+  }
+
+  // 3) Date filter
+  if (dateFilter) {
+    filtered = filterByDate(filtered, dateFilter);
+  }
+
+  // 4) Audience filter
+  if (audienceFilter) {
+    filtered = filterByAudience(filtered, audienceFilter);
+  }
+
+  // 5) Location and distance filtering
+  const userCoords = newCoordinates || coordinates;
+
+  if (locationInput.trim()) {
+    const coords = await fetchCoordinates(locationInput);
+    if (coords) {
+      userCoords.lat = coords.lat;
+      userCoords.lng = coords.lng;
+      setCoordinates(coords);
+    } else {
+      // Fallback: string-based location match
+      filtered = filtered.filter((event) =>
+        event.location.toLowerCase().includes(locationInput.toLowerCase())
       );
     }
+  }
 
-    // 3) Date filter:
-    if (dateFilter) {
-      filtered = filterByDate(filtered, dateFilter);
-    }
+  if (distanceFilter > 0) {
+    filtered = filtered.filter((event) => {
+      const distance = getDistanceFromLatLng(
+        userCoords.lat,
+        userCoords.lng,
+        event.lat,
+        event.lng
+      );
+      return distance <= distanceFilter;
+    });
+  }
 
-    // 4) Audience filter:
-    if (audienceFilter) {
-      filtered = filtered.filter((event) => event.audience === audienceFilter);
-    }
-    // or use your "filterByAudience" helper:
-    filtered = filterByAudience(filtered, audienceFilter);
-
-    // 5) Distance filter:
-    const userCoords = newCoordinates || coordinates;
-    // If distanceFilter === 0, treat as "no distance limit"
-    const maxDistance = distanceFilter > 0 ? distanceFilter : null;
-
-    // If there's text in locationInput, fetch coordinates:
-    if (locationInput.trim().length) {
-      const coords = await fetchCoordinates(locationInput);
-      if (coords) {
-        userCoords.lat = coords.lat;
-        userCoords.lng = coords.lng;
-        setCoordinates(coords);
-      } else {
-        // If we couldn't get coords, fallback to text-based filtering
-        filtered = filtered.filter((event) =>
-          event.location.toLowerCase().includes(locationInput.toLowerCase())
-        );
-      }
-    }
-
-    // Actually filter if maxDistance is set:
-    if (maxDistance) {
-      filtered = filtered.filter((event) => {
-        const distance = getDistanceFromLatLng(
-          userCoords.lat,
-          userCoords.lng,
-          event.lat,
-          event.lng
-        );
-        return distance <= maxDistance;
-      });
-    }
-
-    setFilteredEvents(filtered);
-    setHasSearched(true);
-  };
+  setFilteredEvents(filtered);
+  setHasSearched(true);
+};
 
   // Re-run search if any filter changes:
   useEffect(() => {
     handleSearch();
   }, [category, dateFilter, distanceFilter, audienceFilter]);
 
-  const eventsToDisplay = showOnlyFavorites
-    ? filteredEvents.filter((event) => favorites.includes(event.id))
-    : filteredEvents;
+  const eventsToDisplay = showOnlyFavorites ? filteredEvents.filter(e => favorites.includes(e.id)) : filteredEvents;
 
   if (!isLoaded) return <p>Loading Google Maps...</p>;
 
@@ -242,7 +269,7 @@ const EventSearch = ({ isLoaded }) => {
         {/* LEFT SIDE */}
         <div className="col-md-8">
           <h1>Upcoming Events</h1>
-
+  
           {/* SEARCH BAR */}
           <div className="d-flex align-items-center mb-3 search-bar-container">
             <input
@@ -252,8 +279,9 @@ const EventSearch = ({ isLoaded }) => {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              aria-label="Search input"
             />
-
+  
             <AutocompleteInput
               value={locationInput}
               onChange={(e) => setLocationInput(e.target.value)}
@@ -268,24 +296,25 @@ const EventSearch = ({ isLoaded }) => {
               }}
               onKeyDown={handleKeyDown}
             />
-
-            <button className="btn btn-danger" onClick={() => handleSearch()}>
+  
+            <button className="btn btn-danger" onClick={handleSearch}
+              aria-label="Search">
               <FaSearch />
             </button>
-
-            <button className="btn btn-secondary ms-2" onClick={handleUseMyLocation}>
+  
+            <button
+              className="btn btn-secondary ms-2"
+              onClick={handleUseMyLocation}
+              aria-label="Use my location"
+            >
               Use My Location
             </button>
           </div>
-
+  
           {/* FILTERS */}
           <div className="d-flex mb-4 gap-3">
-            {/* Date Filter */}
-            <select
-              className="form-select"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-            >
+            <select className="form-select" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+
               <option value="">Any Day</option>
               <option value="today">Today</option>
               <option value="tomorrow">Tomorrow</option>
@@ -295,11 +324,7 @@ const EventSearch = ({ isLoaded }) => {
             </select>
 
             {/* Category Filter */}
-            <select
-              className="form-select"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
+            <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">Any Category</option>
               <option value="Music">Music</option>
               <option value="Business">Business</option>
@@ -308,42 +333,33 @@ const EventSearch = ({ isLoaded }) => {
             </select>
 
             {/* Audience Filter */}
-            <select
-              className="form-select"
-              value={audienceFilter}
-              onChange={(e) => setAudienceFilter(e.target.value)}
-            >
+            <select className="form-select" value={audienceFilter} onChange={(e) => setAudienceFilter(e.target.value)}>
               <option value="">Any Audience</option>
               <option value="Everyone">Everyone</option>
               <option value="18+">18+</option>
               <option value="21+">21+</option>
             </select>
-            {/* Distance Slider */}
-            
           </div>
+  
+          {/* Distance Slider */}
           <div className="distance-slider-wrapper">
-              <label htmlFor="distanceSlider" className="form-label">
-                <h5>Event Search Distance:{" "}
-                {distanceFilter === 0
-                  ? "Any"
-                  : `${distanceFilter} miles`}
-                  </h5>
-              </label>
-              <input
-                id="distanceSlider"
-                type="range"
-                className="form-range"
-                min="0"
-                max="100"  // or whatever max you want
-                value={distanceFilter}
-                onChange={(e) => {
-                  // Convert string -> number
-                  const val = parseInt(e.target.value, 10);
-                  setDistanceFilter(val);
-                }}
-              />
-            </div>
-
+            <label htmlFor="distanceSlider" className="form-label">
+              <h5>
+                Event Search Distance:{" "}
+                {distanceFilter === 0 ? "Any" : `${distanceFilter} miles`}
+              </h5>
+            </label>
+            <input
+              id="distanceSlider"
+              type="range"
+              className="form-range"
+              min="0"
+              max="100"
+              value={distanceFilter}
+              onChange={(e) => setDistanceFilter(parseInt(e.target.value, 10))}
+            />
+          </div>
+  
           {/* Favorites toggle */}
           <div className="form-check mb-3">
             <input
@@ -357,7 +373,7 @@ const EventSearch = ({ isLoaded }) => {
               Show only favorites
             </label>
           </div>
-
+  
           {/* EVENT LIST */}
           <div className="row">
             {eventsToDisplay.map((event) => (
@@ -391,15 +407,18 @@ const EventSearch = ({ isLoaded }) => {
                       </button>
                     </div>
                     <p className="card-text">
-                      <strong>Date:</strong> {formatDisplayDate(event.date)}
+                      <strong>Date:</strong>{" "}
+                      {event.date ? formatDisplayDate(event.date) : "N/A"}
                     </p>
                     <p className="card-text">
-                      <strong>Location:</strong> {event.location}
+                      <strong>Location:</strong> {event.location || "N/A"}
                     </p>
                     <p className="card-text">
                       <strong>Audience:</strong> {event.audience || "Everyone"}
                     </p>
-                    <p className="card-text">{event.description}</p>
+                    <p className="card-text">
+                      {event.description || "No description available."}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -407,28 +426,34 @@ const EventSearch = ({ isLoaded }) => {
             {eventsToDisplay.length === 0 && <p>No events found.</p>}
           </div>
         </div>
-
+  
         {/* RIGHT SIDE - Map */}
         <div className="col-md-4">
           <div className="map-wrapper">
-          <MapWithMarkers
-          center={coordinates}
-          isLoaded={isLoaded}
-          events={filteredEvents.filter(
-            (event) =>
-              typeof event.lat === "number" &&
-              typeof event.lng === "number" &&
-              !isNaN(event.lat) &&
-              !isNaN(event.lng)
-          )}
-        />         
-        </div>
+            <MapWithMarkers
+              center={coordinates}
+              isLoaded={isLoaded}
+              events={filteredEvents.filter(
+                (event) =>
+                  typeof event.lat === "number" &&
+                  typeof event.lng === "number" &&
+                  !isNaN(event.lat) &&
+                  !isNaN(event.lng)
+              )}
+            />
+          </div>
         </div>
       </div>
-
-      <Modal event={activeEvent} onClose={() => setActiveEvent(null)} />
+  
+      {/* Modal with attend support */}
+      <Modal
+        event={activeEvent}
+        onClose={() => setActiveEvent(null)}
+        onAttend={() => handleAttendEvent(activeEvent)}
+      />
     </div>
   );
 };
 
 export default EventSearch;
+
