@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import useUserProfile from "../hooks/useUserProfile";
-import { Link } from "react-router-dom";
+import ManageEvents from "../components/ManageEvents"; // import the component here
 import "../styles/UserProfile.css";
 
 
@@ -15,6 +15,7 @@ const UserProfile = () => {
   const [contact, setContact] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [photoGallery, setPhotoGallery] = useState([]);
+  const [showManageEvents, setShowManageEvents] = useState(false); //NEW STATE
 
   useEffect(() => {
     if (profileData) {
@@ -85,6 +86,7 @@ const UserProfile = () => {
       </Container>
 
       <Container className="profile-wrapper">
+        {/* Profile Info Section */}
         <div className="profile-card">
           {isEditing ? (
             <>
@@ -148,13 +150,33 @@ const UserProfile = () => {
             </>
           )}
         </div>
-        <div className="profile-card">
+        {/* <div className="profile-card">
           <h3>Manage My Events</h3>
           <p>View and edit the events you’re hosting or attending.</p>
           <Link to="/manage-events" className="modal-button">
             Go to Event Manager
           </Link>
+        </div> */}
+
+         {/* Manage Events Section */}
+         <div className="profile-card">
+          <h3>Manage My Events</h3>
+          <p>View and edit the events you’re hosting or attending.</p>
+          <button
+            onClick={() => setShowManageEvents(!showManageEvents)}
+            className="modal-button"
+          >
+            {showManageEvents ? "Hide My Events" : "Show My Events"}
+          </button>
+
+          {/* Toggle ManageEvents component */}
+          {showManageEvents && (
+            <div style={{ marginTop: "1rem" }}>
+              <ManageEvents />
+            </div>
+          )}
         </div>
+
       </Container>
 
 
