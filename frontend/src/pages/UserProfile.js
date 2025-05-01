@@ -150,14 +150,7 @@ const UserProfile = () => {
             </>
           )}
         </div>
-        {/* <div className="profile-card">
-          <h3>Manage My Events</h3>
-          <p>View and edit the events you’re hosting or attending.</p>
-          <Link to="/manage-events" className="modal-button">
-            Go to Event Manager
-          </Link>
-        </div> */}
-
+        
          {/* Manage Events Section */}
          <div className="profile-card">
           <h3>Manage My Events</h3>
@@ -171,7 +164,7 @@ const UserProfile = () => {
 
           {/* Toggle ManageEvents component */}
           {showManageEvents && (
-            <div style={{ marginTop: "1rem" }}>
+            <div style={{ marginTop: ".25rem" }}>
               <ManageEvents />
             </div>
           )}
