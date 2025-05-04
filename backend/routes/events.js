@@ -56,16 +56,22 @@ router.post("/events", async (req, res) => {
  */
 router.post("/events/:id/attend", async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { auth0Id } = req.body; // Expecting Auth0 ID from frontend
+
+    // 1. Find the User by Auth0 ID
+    const user = await User.findOne({ auth0Id });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    if (!event.attendees.includes(userId)) {
-      event.attendees.push(userId);
+    // 2. Add user's MongoDB _id to the attendees array if not already added
+    if (!event.attendees.includes(user._id)) {
+      event.attendees.push(user._id);
       await event.save();
 
-      await User.findByIdAndUpdate(userId, {
+      // 3. Also add the event to the user's 'eventsGoing' array
+      await User.findByIdAndUpdate(user._id, {
         $addToSet: { eventsGoing: event._id },
       });
     }
@@ -76,6 +82,8 @@ router.post("/events/:id/attend", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 /**
  * @route   GET /api/events
