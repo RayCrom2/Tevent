@@ -42,7 +42,7 @@ function EventCalendar({ isLoaded }) {
 
     const fetchEvents = async () => {
     try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events`);
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
         if (!response.ok) throw new Error("Failed to fetch events");
 
         const data = await response.json();
@@ -123,7 +123,7 @@ function EventCalendar({ isLoaded }) {
   
 
     try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
         method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEvent)
