@@ -10,7 +10,8 @@ const router = express.Router();
  */
 router.post("/events", async (req, res) => {
   try {
-    console.log("Incoming request body:", req.body); // 👈 ADD THIS
+    console.log("Incoming request body:", req.body);
+
     const {
       title,
       description,
@@ -42,13 +43,57 @@ router.post("/events", async (req, res) => {
     });
 
     const savedEvent = await newEvent.save();
-    console.log("Saved to DB:", savedEvent); // 👈 ADD THIS
+    console.log("Saved to DB:", savedEvent);
     res.status(201).json(savedEvent);
   } catch (err) {
-    console.error("Error creating event:", err);
+    console.error("Error creating event:", err.message); // ✅ Better logging
+    console.error("Stack trace:", err.stack);
     res.status(500).json({ error: "Server error creating event." });
   }
 });
+
+
+// router.post("/events", async (req, res) => {
+//   try {
+//     console.log("Incoming request body:", req.body); // 👈 ADD THIS
+//     const {
+//       title,
+//       description,
+//       location,
+//       audience,
+//       category,
+//       lat,
+//       lng,
+//       date,
+//       startTime,
+//       endTime,
+//     } = req.body;
+
+//     if (!title || !location || !date) {
+//       return res.status(400).json({ error: "Title, location, and date are required." });
+//     }
+
+//     const newEvent = new Event({
+//       title,
+//       description,
+//       location,
+//       date: new Date(date),
+//       audience,
+//       category,
+//       lat,
+//       lng,
+//       startTime,
+//       endTime,
+//     });
+
+//     const savedEvent = await newEvent.save();
+//     console.log("Saved to DB:", savedEvent); // 👈 ADD THIS
+//     res.status(201).json(savedEvent);
+//   } catch (err) {
+//     console.error("Error creating event:", err);
+//     res.status(500).json({ error: "Server error creating event." });
+//   }
+// });
 
 /**
  * @route   POST /api/events/:id/attend
@@ -56,16 +101,22 @@ router.post("/events", async (req, res) => {
  */
 router.post("/events/:id/attend", async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { auth0Id } = req.body; // Expecting Auth0 ID from frontend
+
+    // 1. Find the User by Auth0 ID
+    const user = await User.findOne({ auth0Id });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    if (!event.attendees.includes(userId)) {
-      event.attendees.push(userId);
+    // 2. Add user's MongoDB _id to the attendees array if not already added
+    if (!event.attendees.includes(user._id)) {
+      event.attendees.push(user._id);
       await event.save();
 
-      await User.findByIdAndUpdate(userId, {
+      // 3. Also add the event to the user's 'eventsGoing' array
+      await User.findByIdAndUpdate(user._id, {
         $addToSet: { eventsGoing: event._id },
       });
     }
@@ -76,6 +127,8 @@ router.post("/events/:id/attend", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 /**
  * @route   GET /api/events
@@ -92,29 +145,22 @@ router.get("/events", async (req, res) => {
 });
 
 
-// Toggle favorite status for an event
-router.post("/events/:id/favorite", async (req, res) => {
-  const { userId } = req.body; // user.sub from frontend
+router.get('/users/favorites', async (req, res) => {
+  const { auth0Id } = req.query; // assuming you pass auth0Id as a query param
+
   try {
-    const user = await getOrCreateUser({ sub: userId });
+    const user = await User.findOne({ auth0Id }).populate('favorites'); // populate if favorites are event refs
 
-    const eventId = req.params.id;
-    const alreadyFavorited = user.favorites.includes(eventId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (alreadyFavorited) {
-      user.favorites.pull(eventId);
-    } else {
-      user.favorites.push(eventId);
-    }
-
-    await user.save();
-    res.json({ success: true, favorited: !alreadyFavorited });
-
-  } catch (err) {
-    console.error("Error syncing Auth0 user:", err);
-    res.status(500).json({ error: "Server error" });
+    res.json({ favorites: user.favorites });
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
+
+
 
 
 const getOrCreateUser = async (auth0User) => {
@@ -133,6 +179,6 @@ const getOrCreateUser = async (auth0User) => {
   return user;
 };
 
-module.exports = { getOrCreateUser };
+//module.exports = getOrCreateUser;
 
 module.exports = router;

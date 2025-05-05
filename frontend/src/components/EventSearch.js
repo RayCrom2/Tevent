@@ -8,11 +8,14 @@ import { toast } from "react-toastify";
 import { filterByDate } from "../utils/dateUtils";
 import Fuse from "fuse.js";
 import "bootstrap/dist/css/bootstrap.min.css";
+import '../styles/EventSearch.css'; 
+
 
 import AutocompleteInput from "../components/AutocompleteInput";
 import Modal from "../components/Modal";
 import MapWithMarkers from "../components/MapWithMarkers";
 import { filterByAudience } from "../utils/audienceUtils";
+
 
 function formatDisplayDate(isoString) {
   const options = { year: "numeric", month: "long", day: "numeric" };
@@ -33,6 +36,22 @@ const EventSearch = ({ isLoaded }) => {
   const [searchInput, setSearchInput] = useState("");
   const [audienceFilter, setAudienceFilter] = useState("");
   const [allEvents, setAllEvents] = useState([]);
+  const [showAddEvent, setShowAddEvent] = useState(false);
+  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState('');
+  const [start, setStart] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [end, setEnd] = useState('');
+  const [location, setLocation] = useState('');
+  const [audience, setAudience] = useState('');
+  const [lat, setLat] = useState('');
+  const [lng, setLng] = useState('');
+  const [events, setEvents] = useState([]);
+  const currentDate = new Date().toLocaleDateString('en-CA');
+  const defaultStartTimeF = '09:00';
+  const defaultEndTimeF = '17:00';
+
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
 
   // 🌍 On mount, try to center map on the user's current location
@@ -77,43 +96,43 @@ const EventSearch = ({ isLoaded }) => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
+      if (!response.ok) throw new Error("Failed to fetch events");
+
+      const data = await response.json();
+
+      //Normalize _id to id
+      const normalized = data.map((event) => ({
+        ...event,
+        id: event._id || event.id,
+      }));
+
+      //Filter events with valid coordinates
+      const cleanData = normalized.filter(
+        (event) => 
+          typeof event.lat === "number" &&
+          typeof event.lng === "number" &&
+          !isNaN(event.lat) &&
+          !isNaN(event.lng)
+      );
+
+      //Set state
+      setAllEvents(normalized);      // Full list including all event data
+      setFilteredEvents(cleanData);  // Cleaned list for rendering/map
+
+      console.log("All events from backend:", normalized);     // Log full data
+      console.log("Cleaned events with valid coordinates:", cleanData); // Log filtered
+
+    } catch (err) {
+      console.error(" Error loading events:", err);
+      toast.error("Failed to load events from server.");
+    }
+  };
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
-        if (!response.ok) throw new Error("Failed to fetch events");
-  
-        const data = await response.json();
-  
-        //Normalize _id to id
-        const normalized = data.map((event) => ({
-          ...event,
-          id: event._id || event.id,
-        }));
-  
-        //Filter events with valid coordinates
-        const cleanData = normalized.filter(
-          (event) =>
-            typeof event.lat === "number" &&
-            typeof event.lng === "number" &&
-            !isNaN(event.lat) &&
-            !isNaN(event.lng)
-        );
-  
-        //Set state
-        setAllEvents(normalized);      // Full list including all event data
-        setFilteredEvents(cleanData);  // Cleaned list for rendering/map
-  
-        console.log("All events from backend:", normalized);     // Log full data
-        console.log("Cleaned events with valid coordinates:", cleanData); // Log filtered
-  
-      } catch (err) {
-        console.error(" Error loading events:", err);
-        toast.error("Failed to load events from server.");
-      }
-    };
-  
+    
     fetchEvents();
   }, []);
 
@@ -128,7 +147,63 @@ const EventSearch = ({ isLoaded }) => {
     localStorage.setItem("myEvents", JSON.stringify(myEvents));
     toast.success("Event added to your profile!");
   };
+  //For add events 
+  const handleAddEvent = async () => {
+    if (!title || !start || !end || !location || !lat || !lng) {
+      return alert("Please fill out all required fields including location.");
+    }
+  
+    const newEvent = {
+      title,
+      description,
+      location,
+      audience,
+      category,
+      lat,
+      lng,
+      date: formatToYMD(start),
+      startTime,
+      endTime,
+    };
+ try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
+        method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEvent)
+        });
+  
+      if (!response.ok) throw new Error("Failed to save event");
+  
+      const savedEvent = await response.json();
+  
+      // Add the event to the calendar view
+      await fetchEvents(); // refresh the entire calendar
+  
+      toast.success("Event successfully added!");
+  
+      // Reset form
+      setTitle('');
+      setStart('');
+      setEnd('');
+      setStartTime('');
+      setEndTime('');
+      setLocation('');
+      setLat('');
+      setLng('');
+      setAudience('');
+      setCategory('');
+      setDescription('');
+      setShowAddEvent(false);
+    } catch (error) {
+      console.error("Error saving event:", error);
+      toast.error("Failed to save event. Try again.");
+    }
+  };
+  
 
+  const handleButtonClick = () => {
+    setShowAddEvent(true);
+  };
 
   const toggleFavorite = async (eventId) => {
     if (!isAuthenticated) {
@@ -137,30 +212,48 @@ const EventSearch = ({ isLoaded }) => {
     }
   
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events/${eventId}/favorite`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/users/favorites`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: user.sub }) // or your user's MongoDB ID
+        body: JSON.stringify({
+          auth0Id: user.sub, 
+          eventId,
+        }),
       });
   
       if (!response.ok) throw new Error("Failed to toggle favorite");
   
       const result = await response.json();
-      setFavorites((prev) =>
-        result.favorited
-          ? [...prev, eventId]
-          : prev.filter((id) => id !== eventId)
-      );
   
-      toast.success(result.favorited ? "Added to favorites!" : "Removed from favorites");
+      setFavorites(result.updatedFavorites);
+      toast.success(result.message);
   
     } catch (err) {
       console.error("Toggle favorite error:", err);
       toast.error("Something went wrong. Please try again.");
     }
   };
+  
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!isAuthenticated || !user) return;
+  
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/users/favorites?auth0Id=${user.sub}`);
+        if (!response.ok) throw new Error("Failed to fetch favorites");
+        const data = await response.json();
+        setFavorites(data.favorites.map(fav => fav._id || fav)); // depends if your API returns full event or IDs
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+      }
+    };
+  
+    fetchFavorites();
+  }, [isAuthenticated, user]);
+  
   
 
   const handleUseMyLocation = () => {
@@ -204,6 +297,14 @@ const EventSearch = ({ isLoaded }) => {
       handleSearch();
     }
   };
+  function formatToYMD(dateStr) {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, "0");
+    const day = `${date.getDate()}`.padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  
 
 
 const handleSearch = async ({ newCoordinates } = {}) => {
@@ -279,7 +380,109 @@ const handleSearch = async ({ newCoordinates } = {}) => {
   if (!isLoaded) return <p>Loading Google Maps...</p>;
 
   return (
+   <>
+    {showAddEvent && (
+    <div className="event-form-container">
+      <h3>Add New Event</h3>
+
+      <div className="form-group">
+        <input
+          type="text"
+          placeholder="Event Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
+
+        <AutocompleteInput
+        className="form-group"
+        placeholder="Enter address"
+        onPlaceSelected={(place) => {
+            if (!place.geometry) return;
+
+            setLocation(place.formatted_address);
+            setLat(place.geometry.location.lat());
+            setLng(place.geometry.location.lng());
+        }}></AutocompleteInput>
+        <div className="form-group-row">
+            <input
+              type="date"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+            />
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+            />
+          </div>
+
+          
+
+          <div className="form-group-row">
+            <input
+              type="date"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+            />
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group-row">
+            <select
+              className="form-select"
+              value={audience}
+              onChange={(e) => setAudience(e.target.value)}
+            >
+              <option value="">Any Audience</option>
+              <option value="Everyone">Everyone</option>
+              <option value="18+">18+</option>
+              <option value="21+">21+</option>
+            </select>
+          </div>
+
+        <div className="form-group-row">
+        <select
+              className="form-select"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="">Any Category</option>
+              <option value="Music">Music</option>
+              <option value="Business">Business</option>
+              <option value="Food & Drink">Food & Drink</option>
+              <option value="Health & Fitness">Health & Fitness</option>
+              <option value="N/A">N/A</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <textarea
+              className="event-description-input"
+              placeholder="Event Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="button-row">
+            <button className="add-event-btn" onClick={handleAddEvent}> Submit Event</button>
+            <button className="cancel-event-btn" onClick={() => setShowAddEvent(false)}>Cancel</button>
+          </div>
+
+          
+        </div>
+      )}
+  
     <div className="container mt-4">
+            {isAuthenticated && (
+          <button className="add-event-btn" onClick={handleButtonClick}>➕ Add Event</button>
+        )}
       <div className="row">
         {/* LEFT SIDE */}
         <div className="col-md-8">
@@ -467,8 +670,8 @@ const handleSearch = async ({ newCoordinates } = {}) => {
         onAttend={() => handleAttendEvent(activeEvent)}
       />
     </div>
+    </>
   );
 };
 
 export default EventSearch;
-

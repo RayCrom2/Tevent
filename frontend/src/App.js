@@ -24,6 +24,8 @@ import './styles/EventSearch.css';
 import "./styles/App.css"
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "react-toastify/dist/ReactToastify.css";
+import { ThemeProvider } from './context/ThemeContext'; // adjust path as needed
+
 
 
 const App = () => {
@@ -42,6 +44,7 @@ const App = () => {
   if (loadError) console.error("Google Maps load error:", loadError);
   
   return (
+    <ThemeProvider>
     <Router>
       <Layout>
         <Routes>
@@ -96,6 +99,7 @@ const App = () => {
         pauseOnHover
       />
     </Router>
+  </ThemeProvider>
   );
 };
 
