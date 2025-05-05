@@ -10,7 +10,8 @@ const router = express.Router();
  */
 router.post("/events", async (req, res) => {
   try {
-    console.log("Incoming request body:", req.body); // 👈 ADD THIS
+    console.log("Incoming request body:", req.body);
+
     const {
       title,
       description,
@@ -42,13 +43,57 @@ router.post("/events", async (req, res) => {
     });
 
     const savedEvent = await newEvent.save();
-    console.log("Saved to DB:", savedEvent); // 👈 ADD THIS
+    console.log("Saved to DB:", savedEvent);
     res.status(201).json(savedEvent);
   } catch (err) {
-    console.error("Error creating event:", err);
+    console.error("Error creating event:", err.message); // ✅ Better logging
+    console.error("Stack trace:", err.stack);
     res.status(500).json({ error: "Server error creating event." });
   }
 });
+
+
+// router.post("/events", async (req, res) => {
+//   try {
+//     console.log("Incoming request body:", req.body); // 👈 ADD THIS
+//     const {
+//       title,
+//       description,
+//       location,
+//       audience,
+//       category,
+//       lat,
+//       lng,
+//       date,
+//       startTime,
+//       endTime,
+//     } = req.body;
+
+//     if (!title || !location || !date) {
+//       return res.status(400).json({ error: "Title, location, and date are required." });
+//     }
+
+//     const newEvent = new Event({
+//       title,
+//       description,
+//       location,
+//       date: new Date(date),
+//       audience,
+//       category,
+//       lat,
+//       lng,
+//       startTime,
+//       endTime,
+//     });
+
+//     const savedEvent = await newEvent.save();
+//     console.log("Saved to DB:", savedEvent); // 👈 ADD THIS
+//     res.status(201).json(savedEvent);
+//   } catch (err) {
+//     console.error("Error creating event:", err);
+//     res.status(500).json({ error: "Server error creating event." });
+//   }
+// });
 
 /**
  * @route   POST /api/events/:id/attend
@@ -134,5 +179,6 @@ const getOrCreateUser = async (auth0User) => {
   return user;
 };
 
-router.getOrCreateUser = getOrCreateUser;
+//module.exports = getOrCreateUser;
+
 module.exports = router;
