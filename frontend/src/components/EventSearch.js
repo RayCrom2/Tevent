@@ -93,6 +93,14 @@ const EventSearch = ({ isLoaded }) => {
                                  e.category?.toLowerCase() === filterCategory.toLowerCase());
     if (audienceFilter)       results = filterByAudience(results, audienceFilter);
 
+        // 3) city / zip code string match
+    if (locationInput.trim()) {
+      const needle = locationInput.toLowerCase();
+      results = results.filter(e =>
+        e.location?.toLowerCase().includes(needle)
+      );
+    }
+
     // location & distance
     let userCoords = { ...coordinates };
     if (locationInput) {
@@ -115,6 +123,28 @@ const EventSearch = ({ isLoaded }) => {
     filterCategory, audienceFilter,
     locationInput, distanceFilter, coordinates
   ]);
+
+  // on mount (and whenever user logs in) fetch the user's favorites from your API
+ useEffect(() => {
+     if (!isAuthenticated || !user) {
+       setFavorites([]);
+       return;
+     }
+  
+     (async () => {
+       try {
+         const res = await fetch(
+           `${process.env.REACT_APP_BACKEND_URL}api/users/${user.sub}/favorites`
+         );
+         if (!res.ok) throw new Error("Failed to load favorites");
+         const { favorites: favIds } = await res.json();
+         setFavorites(favIds);
+       } catch (err) {
+         console.error(err);
+         toast.error("Could not load your favorites");
+       }
+     })();
+   }, [isAuthenticated, user]);
 
   // add‐event POST
   const handleAddEvent = async () => {
@@ -157,25 +187,27 @@ const EventSearch = ({ isLoaded }) => {
     }
   };
 
-  // favorite, attend, geo… (unchanged)
-  const toggleFavorite = async id => {
+    // POST / DELETE to your user-favorites endpoint
+  const toggleFavorite = async (eventId) => {
     if (!isAuthenticated) return toast.error("Log in to favorite");
+
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}api/events/${id}/favorite`,
+        `${process.env.REACT_APP_BACKEND_URL}api/users/${user.sub}/favorites`,
         {
-          method: "POST",
+          method: "PUT", // or POST→DELETE depending on your API design
           headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ userId: user.sub })
+          body: JSON.stringify({ eventId })
         }
       );
-      if (!res.ok) throw new Error();
-      const { favorited } = await res.json();
-      setFavorites(favs =>
-        favorited ? [...favs, id] : favs.filter(x => x !== id)
-      );
-    } catch {
-      toast.error("Favorite toggle failed");
+      if (!res.ok) throw new Error("Toggle failed");
+
+      const { favorites: updatedFavorites } = await res.json();
+      setFavorites(updatedFavorites);
+      toast.success("Favorites updated");
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not update favorites");
     }
   };
 
