@@ -1,0 +1,33 @@
+/* Ensure InfoWindow text is always visible */
+.info-window-content {
+    max-width: 200px;
+    color: #222 !important;
+    font-family: Arial, sans-serif;
+    line-height: 1.2;
+    padding: 4px 0;
+  }
+  
+  .info-window-content h6 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #222 !important;
+  }
+  
+  .info-window-content p {
+    margin: 0 0 4px;
+    font-size: 14px;
+    color: #444 !important;
+  }
+  
+  .info-window-content small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #666 !important;
+  }
+  
+  /* super‐specific selector for the InfoWindow’s close button */
+.gm-style-iw button[title="Close"] {
+  display: none !important;
+}
