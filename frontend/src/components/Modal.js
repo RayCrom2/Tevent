@@ -1,86 +1,126 @@
+// components/Modal.jsx
 import React from "react";
-import { toast } from "react-toastify"; // Optional but recommended
+import { toast } from "react-toastify";
 
-const Modal = ({ event, onClose }) => {
+// helper to format ISO→YYYY-MM-DD
+function formatDate(iso) {
+  if (!iso) return "N/A";
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
+
+// helper to format “HH:MM” → human time
+function formatTimeHM(timeStr) {
+  if (!timeStr) return "N/A";
+  const [h, m] = timeStr.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m);
+  return d.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+export default function Modal({ event, onClose, onAttend }) {
   if (!event) return null;
 
-   // Format date to YYYY-MM-DD
-   function formatDate(iso) {
-    return new Date(iso).toISOString().slice(0, 10);
-   }
+  const {
+    title,
+    date,
+    startTime,
+    endTime,
+    location,
+    audience = "Everyone",
+    category = "N/A",
+    description = "No description provided.",
+  } = event;
 
-
-  function formatTime(timeStr) {
-    if (!timeStr) return "N/A";
-    const [hour, minute] = timeStr.split(":");
-    const date = new Date();
-    date.setHours(Number(hour));
-    date.setMinutes(Number(minute));
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  }
-
-  const handleSaveEvent = (type) => {
+  const handleAttend = () => {
     if (!event.id) {
-      toast.error("Cannot save event without an ID.");
+      toast.error("Cannot attend an event without an ID.");
       return;
     }
-
-    const stored = JSON.parse(localStorage.getItem("myEvents")) || [];
-
-    const alreadyExists = stored.some((e) => e.id === event.id);
-    if (alreadyExists) {
-      toast.info("ℹ️ You already saved this event.");
-      return;
-    }
-
-    const updated = [...stored, event];
-    localStorage.setItem("myEvents", JSON.stringify(updated));
-    toast.success("✅ Event saved to your profile!");
+    onAttend(event);
     onClose();
   };
 
-
   return (
     <div
-      className="modal"
+      className="modal-overlay"
       style={{
         position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        display: "flex", justifyContent: "center", alignItems: "center",
+        zIndex: 1000
       }}
     >
       <div
+        className="modal-content"
         style={{
-          backgroundColor: "white",
+          background: "var(--bs-body-bg)",
+          color: "var(--bs-body-color)",
           padding: "2rem",
           borderRadius: "8px",
           maxWidth: "600px",
           width: "90%",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
         }}
       >
-        <h2 className="mb-3">{event.title}</h2>
-        <p><strong>Date:</strong> {formatDate(event.date)}</p>
-        <p><strong>Time:</strong> {formatTime(event.startTime)} – {formatTime(event.endTime)}</p>
-        <p><strong>Location:</strong> {event.location}</p>
-        <p><strong>Audience:</strong> {event.audience || "Everyone"}</p>
-        <p><strong>Description:</strong> {event.description}</p>
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "1rem",
+            right: "1rem",
+            background: "transparent",
+            border: "none",
+            fontSize: "1.5rem",
+            cursor: "pointer",
+            color: "inherit"
+          }}
+          aria-label="Close"
+        >
+          &times;
+        </button>
 
-        <div className="text-end mt-4" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-          <button className="modal-button" onClick={() => handleSaveEvent("attend")}>Attend</button>
-          <button className="modal-button" onClick={() => handleSaveEvent("save")}>Save</button>
-          <button className="modal-button" onClick={onClose}>Close</button>
+        <h2 className="mb-3">{title}</h2>
+
+        <p><strong>Date:</strong> {formatDate(date)}</p>
+        <p>
+          <strong>Time:</strong>{" "}
+          {formatTimeHM(startTime)} – {formatTimeHM(endTime)}
+        </p>
+        <p><strong>Location:</strong> {location || "N/A"}</p>
+        <p><strong>Audience:</strong> {audience}</p>
+        <p><strong>Category:</strong> {category}</p>
+
+        <hr />
+
+        <p>{description}</p>
+
+        <div
+          className="d-flex justify-content-end mt-4"
+          style={{ gap: "0.5rem" }}
+        >
+          <button
+            className="btn btn-primary"
+            onClick={handleAttend}
+          >
+            Attend
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={onClose}
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default Modal;
+}

@@ -143,7 +143,9 @@
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s ease;
-    margin-bottom: 1rem;
+    position: fixed;
+    bottom: 5px;
+    right: 5px;
   }
   
   .add-event-btn:hover {
