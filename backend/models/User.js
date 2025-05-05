@@ -6,6 +6,10 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   picture: { type: String },
 
+  backgroundImage: { type: String }, // <-- added for profile background
+
+  gallery: [{ type: String }], // <-- added for array of gallery photo URLs
+
   // Optional if using Auth0
   password: { type: String, default: "auth0" }, // for legacy/fallback only
 
@@ -38,8 +42,7 @@ const UserSchema = new mongoose.Schema({
   eventsGoing: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
   pastEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
-
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }]
 });
 
 // Safe export for dev environments

@@ -4,6 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import TeventLogo from "../assets/images/TeventLogo.PNG"
+import ToggleThemeButton from './ToggleThemeButton'; // ✅ correct for default export
+
 
 function Layout({ children }) {
   const { loginWithRedirect, logout, isAuthenticated, user } = useAuth0();
@@ -46,6 +48,7 @@ function Layout({ children }) {
                 <Nav.Link onClick={() => loginWithRedirect()}>Login</Nav.Link>
               )}
             </Nav>
+            <ToggleThemeButton />
           </Navbar.Collapse>
         </Container>
       </Navbar>

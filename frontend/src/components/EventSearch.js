@@ -8,11 +8,14 @@ import { toast } from "react-toastify";
 import { filterByDate } from "../utils/dateUtils";
 import Fuse from "fuse.js";
 import "bootstrap/dist/css/bootstrap.min.css";
+import '../styles/EventSearch.css'; 
+
 
 import AutocompleteInput from "../components/AutocompleteInput";
 import Modal from "../components/Modal";
 import MapWithMarkers from "../components/MapWithMarkers";
 import { filterByAudience } from "../utils/audienceUtils";
+
 
 function formatDisplayDate(isoString) {
   const options = { year: "numeric", month: "long", day: "numeric" };
@@ -20,7 +23,7 @@ function formatDisplayDate(isoString) {
 }
 
 const EventSearch = ({ isLoaded }) => {
-  const { isAuthenticated, user } = useAuth0();
+  const { user, isAuthenticated } = useAuth0(); // Make sure to destructure `user` from useAuth0
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
@@ -85,35 +88,18 @@ const EventSearch = ({ isLoaded }) => {
             !isNaN(event.lat) &&
             !isNaN(event.lng)
         );
-  
-        //Set state
-        setAllEvents(normalized);      // Full list including all event data
-        setFilteredEvents(cleanData);  // Cleaned list for rendering/map
-  
-        console.log("All events from backend:", normalized);     // Log full data
-        console.log("Cleaned events with valid coordinates:", cleanData); // Log filtered
-  
-      } catch (err) {
-        console.error(" Error loading events:", err);
+        console.log("✅ All events from backend:", data); // 👈 Log full raw data
+        console.log("✅ Cleaned events with valid coordinates:", cleanData);
+        setAllEvents(data);
+        setFilteredEvents(data);      
+      } 
+      catch (err) {
         toast.error("Failed to load events from server.");
       }
     };
   
     fetchEvents();
   }, []);
-
-
-  const handleAttendEvent = (event) => {
-    const myEvents = JSON.parse(localStorage.getItem("myEvents")) || [];
-    if (myEvents.find((e) => e.id === event.id)) {
-      toast.info("You already added this event!");
-      return;
-    }
-    myEvents.push(event);
-    localStorage.setItem("myEvents", JSON.stringify(myEvents));
-    toast.success("Event added to your profile!");
-  };
-
 
   const toggleFavorite = async (eventId) => {
     if (!isAuthenticated) {
@@ -122,30 +108,48 @@ const EventSearch = ({ isLoaded }) => {
     }
   
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events/${eventId}/favorite`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/users/favorites`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: user.sub }) // or your user's MongoDB ID
+        body: JSON.stringify({
+          auth0Id: user.sub, 
+          eventId,
+        }),
       });
   
       if (!response.ok) throw new Error("Failed to toggle favorite");
   
       const result = await response.json();
-      setFavorites((prev) =>
-        result.favorited
-          ? [...prev, eventId]
-          : prev.filter((id) => id !== eventId)
-      );
   
-      toast.success(result.favorited ? "Added to favorites!" : "Removed from favorites");
+      setFavorites(result.updatedFavorites);
+      toast.success(result.message);
   
     } catch (err) {
       console.error("Toggle favorite error:", err);
       toast.error("Something went wrong. Please try again.");
     }
   };
+  
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!isAuthenticated || !user) return;
+  
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/users/favorites?auth0Id=${user.sub}`);
+        if (!response.ok) throw new Error("Failed to fetch favorites");
+        const data = await response.json();
+        setFavorites(data.favorites.map(fav => fav._id || fav)); // depends if your API returns full event or IDs
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+      }
+    };
+  
+    fetchFavorites();
+  }, [isAuthenticated, user]);
+  
   
 
   const handleUseMyLocation = () => {

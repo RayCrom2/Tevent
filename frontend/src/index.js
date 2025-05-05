@@ -13,7 +13,6 @@ const onRedirectCallback = (appState) => {
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-
     <Auth0Provider
       domain={domain}
       clientId={clientId}
@@ -21,7 +20,6 @@ root.render(
       onRedirectCallback={onRedirectCallback}
     >
       <App />
-
     </Auth0Provider>
 
 );
