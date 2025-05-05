@@ -35,15 +35,41 @@ const UserProfile = () => {
     }
   }, [profileData]);
 
-
-  const handleBannerPicChange = (e) => {
+  const handleBannerPicChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const newBanner = URL.createObjectURL(file);
-      setBannerPic(newBanner);
-      localStorage.setItem("bannerPic", newBanner);
+      const formData = new FormData();
+      formData.append("image", file);
+  
+      try {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, {
+          method: "POST",
+          body: formData,
+        });
+  
+        const data = await res.json();
+        const uploadedImageUrl = data.imageUrl;
+  
+        setBannerPic(uploadedImageUrl);
+  
+        // Now update the user's backgroundImage in MongoDB
+        await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/updateProfile`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            auth0Id: profileData.auth0Id,
+            backgroundImage: uploadedImageUrl,
+          }),
+        });
+  
+      } catch (error) {
+        console.error("Banner upload failed:", error);
+      }
     }
   };
+  
 
   const handleSave = () => {
     localStorage.setItem("bio", bio);

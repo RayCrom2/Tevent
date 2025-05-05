@@ -1,11 +1,13 @@
-/* Root CSS variables used throughout the profile for theme consistency */
 :root {
-  --card-bg: #ffffff;
-  --text-primary: #1a1a1a;
-  --text-muted: #6a6a6a;
-  --primary-blue: #6b7280;
-  --background: #ffffff;
-  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --text-primary: #111111;
+  --text-muted: #666666;
+  --primary-blue: #0066ff; /* ✅ add this line */
+}
+
+
+[data-theme='dark'] {
+  --text-primary: #ffffff; /* ✅ white in dark mode */
+  --text-muted: #bbbbbb;
 }
 
 /* Styles the user's top banner background image on the profile */
@@ -320,3 +322,43 @@ body {
   font-size: 36px;
   line-height: 1;
 }
+
+[data-theme='dark'] .profile-wrapper {
+  background-color: #1e1e1e;
+  color: #eee;
+}
+
+[data-theme='dark'] .profile-card {
+  background-color: #2a2a2a;
+  color: #eee;
+}
+
+[data-theme='dark'] .form-control {
+  background-color: #333;
+  color: #eee;
+  border: 1px solid #555;
+}
+
+[data-theme='dark'] .modal-button {
+  background-color: #444;
+  color: #eee;
+  border: none;
+}
+
+[data-theme='dark'] .modal-button:hover {
+  background-color: #555;
+}
+
+[data-theme='dark'] .profile-banner {
+  filter: brightness(0.7);
+}
+
+[data-theme='dark'] .photo-gallery {
+  background-color: #1e1e1e;
+}
+
+[data-theme='dark'] .photo-grid-item {
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+}
+
