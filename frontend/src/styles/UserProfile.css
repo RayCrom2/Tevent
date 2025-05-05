@@ -353,6 +353,7 @@ body {
 .photo-gallery h3 {
   display: flex;
   align-items: center;
+  padding-left: 1rem; /* or however much you want */
 }
 
 /* Push the button a bit to the right of the text */
