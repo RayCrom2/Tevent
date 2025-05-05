@@ -73,7 +73,7 @@ const EventSearch = ({ isLoaded }) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/events`);
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
         const cleanData = data.filter(
@@ -105,7 +105,7 @@ const EventSearch = ({ isLoaded }) => {
     }
   
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/favorites`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/users/favorites`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +135,7 @@ const EventSearch = ({ isLoaded }) => {
       if (!isAuthenticated || !user) return;
   
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/favorites?auth0Id=${user.sub}`);
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/users/favorites?auth0Id=${user.sub}`);
         if (!response.ok) throw new Error("Failed to fetch favorites");
         const data = await response.json();
         setFavorites(data.favorites.map(fav => fav._id || fav)); // depends if your API returns full event or IDs
