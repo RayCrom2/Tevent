@@ -21,7 +21,6 @@ function formatDisplayDate(isoString) {
 
 const EventSearch = ({ isLoaded }) => {
   const { isAuthenticated, user } = useAuth0();
-  const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [category, setCategory] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -34,6 +33,22 @@ const EventSearch = ({ isLoaded }) => {
   const [searchInput, setSearchInput] = useState("");
   const [audienceFilter, setAudienceFilter] = useState("");
   const [allEvents, setAllEvents] = useState([]);
+  const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
+
+  // 🌍 On mount, try to center map on the user's current location
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return;
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setCoordinates({ lat: coords.latitude, lng: coords.longitude });
+      },
+      (err) => {
+        console.warn("Geolocation failed, using default:", err);
+      },
+      { timeout: 10000 }
+    );
+  }, []);
 
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
