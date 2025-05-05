@@ -53,14 +53,19 @@ const EventSearch = ({ isLoaded }) => {
   const [title, setTitle]               = useState("");
   const [description, setDescription]   = useState("");
   const [start, setStart]               = useState("");
-  const [startTime, setStartTime]       = useState("");
-  const [end, setEnd]                   = useState("");
-  const [endTime, setEndTime]           = useState("");
+  const [startTime, setStartTime]       = useState("00:00");
+  const [endTime, setEndTime]           = useState("00:00");
   const [evtLocation, setEvtLocation]   = useState("");
   const [evtLat, setEvtLat]             = useState("");
   const [evtLng, setEvtLng]             = useState("");
   const [evtAudience, setEvtAudience]   = useState("");
   const [formCategory, setFormCategory] = useState("");     // ← form side
+   // build an array of times in 15-minute increments
+  const timeOptions = Array.from({ length: 24 * 4 }, (_, i) => {
+      const h = String(Math.floor(i / 4)).padStart(2, "0");
+      const m = String((i % 4) * 15).padStart(2, "0");
+      return `${h}:${m}`;
+ });
 
   // fetch on mount
   useEffect(() => {
@@ -148,7 +153,7 @@ const EventSearch = ({ isLoaded }) => {
 
   // add‐event POST
   const handleAddEvent = async () => {
-    if (!title||!start||!end||!evtLocation||!evtLat||!evtLng) {
+    if (!title || !start || !startTime || !evtLocation || !evtLat || !evtLng) {
       return alert("Please fill all required fields");
     }
     const newEvt = {
@@ -164,27 +169,38 @@ const EventSearch = ({ isLoaded }) => {
       lng:        evtLng
     };
 
-    try {
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(newEvt)
-      });
-      if (!res.ok) throw new Error();
-      // refresh
-      const refreshed = await (await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`)).json();
-      setAllEvents(refreshed.map(e => ({ ...e, id: e._id||e.id })));
-      toast.success("Event added!");
-      // reset form
-      setShowAddEvent(false);
-      setTitle(""); setDescription("");
-      setStart(""); setStartTime("");
-      setEnd(""); setEndTime("");
-      setEvtLocation(""); setEvtLat(""); setEvtLng("");
-      setEvtAudience(""); setFormCategory("");
-    } catch {
-      toast.error("Could not save event");
-    }
+
+     // 1) POST the new event
+  try {
+    const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newEvt),
+    });
+    if (!res.ok) throw new Error("POST failed");
+    toast.success("Event added!");
+  } catch (postErr) {
+    console.error("POST error", postErr);
+    return toast.error("Could not save event");
+  }
+
+  // 2) separately, re-fetch the updated list
+  try {
+    const res2 = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
+    const data2 = await res2.json();
+    setAllEvents(data2.map(e => ({ ...e, id: e._id||e.id })));
+  } catch (refreshErr) {
+    console.error("Refresh error", refreshErr);
+    // optional: you might still want to show a warning toast here,
+    // but it shouldn't override your “Event added!”:
+    toast.warn("Event created but refresh failed. Please reload.");
+  }
+
+  setShowAddEvent(false);
+  setTitle(""); setDescription("");
+  setStartTime(""); setEndTime("");
+  setEvtLocation(""); setEvtLat(""); setEvtLng("");
+  setEvtAudience(""); setFormCategory("");
   };
 
     // POST / DELETE to your user-favorites endpoint
@@ -275,34 +291,27 @@ const EventSearch = ({ isLoaded }) => {
                   }}
                 />
               </div>
-              <div className="form-group-row mb-2">
-                <input
-                  type="date"
-                  className="form-control me-1"
-                  value={start}
-                  onChange={e=>setStart(e.target.value)}
-                />
-                <input
-                  type="time"
-                  className="form-control"
-                  value={startTime}
-                  onChange={e=>setStartTime(e.target.value)}
-                />
-              </div>
-              <div className="form-group-row mb-2">
-                <input
-                  type="date"
-                  className="form-control me-1"
-                  value={end}
-                  onChange={e=>setEnd(e.target.value)}
-                />
-                <input
-                  type="time"
-                  className="form-control"
-                  value={endTime}
-                  onChange={e=>setEndTime(e.target.value)}
-                />
-              </div>
+{/* New single‐date + times row */}
+    <div className="form-group-row mb-2">
+      <input
+        type="date"
+        className="form-control me-1"
+        value={start}
+        onChange={e => setStart(e.target.value)}
+      />
+      <input
+        type="time"
+        className="form-control me-1"
+        value={startTime}
+        onChange={e => setStartTime(e.target.value)}
+      />
+      <input
+        type="time"
+        className="form-control"
+        value={endTime}
+        onChange={e => setEndTime(e.target.value)}
+      />
+    </div>
               <div className="form-group-row mb-2">
                 <select
                   className="form-select me-1"
@@ -338,6 +347,11 @@ const EventSearch = ({ isLoaded }) => {
               <button type="submit" className="add-event-btn">
                 Submit Event
               </button>
+              <datalist id="time-options">
+                  {timeOptions.map(t => (
+                      <option key={t} value={t} />
+                  ))}
+             </datalist>
             </form>
           </div>
         )}
