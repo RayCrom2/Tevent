@@ -20,6 +20,7 @@
     border: 1px solid #ccc;
 }
 
+
 /* Input Fields */
 .search-input {
     flex: 1;
@@ -51,7 +52,7 @@
 
 /* Search Icon Size */
 .search-icon {
-    font-size: 20%; /* Adjust icon size */
+    font-size: 45%; /* Adjust icon size */
 }
 
 /* Styling for Filters */
@@ -176,7 +177,7 @@
 }
 
 [data-theme='dark'] .search-input::placeholder {
-  color: #bbb;
+  color: #fff;
 }
 
 [data-theme='dark'] .search-button {
@@ -195,22 +196,28 @@
 }
 
 [data-theme='dark'] .search-input::placeholder {
-  color: #aaa !important;
+  color: #ffffff !important;
 }
 [data-theme='dark'] .search-input::placeholder,
 [data-theme='dark'] .search-input::-webkit-input-placeholder,
 [data-theme='dark'] .search-input::-moz-placeholder,
 [data-theme='dark'] .search-input:-ms-input-placeholder,
 [data-theme='dark'] .search-input:-moz-placeholder {
-  color: #f0f0f0 !important;
+  color: #ffffff !important;
   opacity: 1 !important; /* Firefox may apply opacity */
 }
 [data-theme='dark'] .form-control {
   background-color: #2a2a2a;
-  color: #f0f0f0;
+  color: #ffffff;
   border: 1px solid #444;
 }
 
 [data-theme='dark'] .form-control::placeholder {
-  color: #bbb;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .form-select {
+  background-color: #2c2c2c;
+  color: #ffffff;
+  border-color: #444;
 }
