@@ -14,11 +14,14 @@ const categorizeEvents = (events) => {
     d1.getMonth() === d2.getMonth() &&
     d1.getDate() === d2.getDate();
 
-  return {
-    past: events.filter((e) => new Date(e.date) < now && !isSameDay(new Date(e.date), now)),
-    present: events.filter((e) => isSameDay(new Date(e.date), now)),
-    future: events.filter((e) => new Date(e.date) > now),
-  };
+    return {
+      //past: events.filter((e) => new Date(e.date) < now && !isSameDay(new Date(e.date), now)),
+      past: events.filter((e) => { const date = new Date(e.date);
+        return date < now && !isSameDay(date, now);
+      }),
+      present: events.filter((e) => isSameDay(new Date(e.date), now)),
+      future: events.filter((e) => new Date(e.date) > now),
+    };
 };
 
 const ManageEvents = () => {
@@ -52,19 +55,36 @@ const ManageEvents = () => {
     setCategorized(categorizeEvents(updatedEvents));
   };
 
-  const renderEventCard = (event) => (
-    <div key={event.id} className="profile-card" style={{ marginBottom: "1rem" }}>
-      <h4>{event.title}</h4>
-      <p>{new Date(event.date).toLocaleString()}</p>
-      <p>{event.location}</p>
-      <button
-        onClick={() => handleRemoveEvent(event.id)}
-        className="btn btn-sm btn-danger mt-2"
-      >
-        Remove
-      </button>
-    </div>
-  );
+  const renderEventCard = (event) => {
+    const now = new Date();
+    const eventDate = new Date(event.date);
+
+    const isSameDay =
+      eventDate.getFullYear() === now.getFullYear() &&
+      eventDate.getMonth() === now.getMonth() &&
+      eventDate.getDate() === now.getDate();
+
+    const isPast = eventDate < now && !isSameDay;
+
+    return (
+      <div key={event.id} className="profile-card" style={{ marginBottom: "1rem" }}>
+        <h4>{event.title}</h4>
+        <p>{eventDate.toLocaleString()}</p>
+        <p>{event.location}</p>
+        <button
+          onClick={() => handleRemoveEvent(event.id)}
+          className="btn btn-sm btn-danger mt-2"
+        >
+          Remove
+        </button>
+        {event.attending && (
+          <button className="btn btn-sm btn-success mt-2 ms-2" disabled>
+            {isPast ? "Attended" : "Attending"}
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="profile-wrapper">
