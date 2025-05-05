@@ -30,74 +30,68 @@ function formatToYMD(dateStr) {
 const EventSearch = ({ isLoaded }) => {
   const { isAuthenticated, user } = useAuth0();
 
-  // Master lists & filters
-  const [allEvents, setAllEvents] = useState([]);
+  // master lists & filter‐side state
+  const [allEvents, setAllEvents]         = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const [searchInput, setSearchInput] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  const [category, setCategory] = useState("");
+  const [searchInput, setSearchInput]     = useState("");
+  const [dateFilter, setDateFilter]       = useState("");
+  const [filterCategory, setFilterCategory] = useState("");   // ← search filter
   const [audienceFilter, setAudienceFilter] = useState("");
   const [distanceFilter, setDistanceFilter] = useState(0);
-  const [locationInput, setLocationInput] = useState("");
+  const [locationInput, setLocationInput]   = useState("");
 
-  // Favourites & active event
-  const [favorites, setFavorites] = useState([]);
+  // favorites & active event
+  const [favorites, setFavorites]     = useState([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [activeEvent, setActiveEvent] = useState(null);
 
-  // Map center
+  // map center
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
 
-  // Add-Event form state
+  // add‐event form state
   const [showAddEvent, setShowAddEvent] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [start, setStart] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [end, setEnd] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [evtLocation, setEvtLocation] = useState("");
-  const [evtLat, setEvtLat] = useState("");
-  const [evtLng, setEvtLng] = useState("");
-  const [evtAudience, setEvtAudience] = useState("");
+  const [title, setTitle]               = useState("");
+  const [description, setDescription]   = useState("");
+  const [start, setStart]               = useState("");
+  const [startTime, setStartTime]       = useState("");
+  const [end, setEnd]                   = useState("");
+  const [endTime, setEndTime]           = useState("");
+  const [evtLocation, setEvtLocation]   = useState("");
+  const [evtLat, setEvtLat]             = useState("");
+  const [evtLng, setEvtLng]             = useState("");
+  const [evtAudience, setEvtAudience]   = useState("");
+  const [formCategory, setFormCategory] = useState("");     // ← form side
 
-  // Fetch events on mount
+  // fetch on mount
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
-        if (!res.ok) throw new Error();
+        const res  = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
         const data = await res.json();
         const normalized = data.map(e => ({ ...e, id: e._id || e.id }));
         setAllEvents(normalized);
-        setFilteredEvents(normalized.filter(e =>
-          typeof e.lat === "number" && typeof e.lng === "number"
-        ));
+        setFilteredEvents(normalized.filter(e => typeof e.lat === "number" && typeof e.lng === "number"));
       } catch {
         toast.error("Failed to load events");
       }
     })();
   }, []);
 
-  // Filter + search whenever inputs change
+  // re-filter anytime any filter‐side value changes
   useEffect(() => {
     let results = allEvents;
 
     // text search
     if (searchInput) {
-      const fuse = new Fuse(allEvents, {
-        keys: ["title", "location"],
-        threshold: 0.3
-      });
+      const fuse = new Fuse(allEvents, { keys: ["title","location"], threshold: 0.3 });
       results = fuse.search(searchInput).map(r => r.item);
     }
 
     // date / category / audience
-    if (dateFilter) results = filterByDate(results, dateFilter);
-    if (category) results = results.filter(e =>
-      e.category?.toLowerCase() === category.toLowerCase()
-    );
-    if (audienceFilter) results = filterByAudience(results, audienceFilter);
+    if (dateFilter)           results = filterByDate(results, dateFilter);
+    if (filterCategory)       results = results.filter(e =>
+                                 e.category?.toLowerCase() === filterCategory.toLowerCase());
+    if (audienceFilter)       results = filterByAudience(results, audienceFilter);
 
     // location & distance
     let userCoords = { ...coordinates };
@@ -111,65 +105,59 @@ const EventSearch = ({ isLoaded }) => {
     }
     if (distanceFilter > 0) {
       results = results.filter(e =>
-        getDistanceFromLatLng(
-          userCoords.lat, userCoords.lng, e.lat, e.lng
-        ) <= distanceFilter
+        getDistanceFromLatLng(userCoords.lat, userCoords.lng, e.lat, e.lng) <= distanceFilter
       );
     }
 
     setFilteredEvents(results);
   }, [
-    allEvents,
-    searchInput,
-    dateFilter,
-    category,
-    audienceFilter,
-    locationInput,
-    distanceFilter,
-    coordinates
+    allEvents, searchInput, dateFilter,
+    filterCategory, audienceFilter,
+    locationInput, distanceFilter, coordinates
   ]);
 
-  // Submit new event
+  // add‐event POST
   const handleAddEvent = async () => {
-    if (!title || !start || !end || !evtLocation || !evtLat || !evtLng) {
+    if (!title||!start||!end||!evtLocation||!evtLat||!evtLng) {
       return alert("Please fill all required fields");
     }
     const newEvt = {
       title,
       description,
       location: evtLocation,
-      audience: evtAudience,
-      category,
-      date: formatToYMD(start),
+      audience:   evtAudience,
+      category:   formCategory,         // ← use formCategory here
+      date:       formatToYMD(start),
       startTime,
       endTime,
-      lat: evtLat,
-      lng: evtLng
+      lat:        evtLat,
+      lng:        evtLng
     };
+
     try {
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEvt)
+        body:    JSON.stringify(newEvt)
       });
       if (!res.ok) throw new Error();
-      // refresh list
-      const refreshed = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`).then(r => r.json());
-      setAllEvents(refreshed.map(e => ({ ...e, id: e._id || e.id })));
+      // refresh
+      const refreshed = await (await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`)).json();
+      setAllEvents(refreshed.map(e => ({ ...e, id: e._id||e.id })));
       toast.success("Event added!");
-      setShowAddEvent(false);
       // reset form
+      setShowAddEvent(false);
       setTitle(""); setDescription("");
       setStart(""); setStartTime("");
       setEnd(""); setEndTime("");
       setEvtLocation(""); setEvtLat(""); setEvtLng("");
-      setEvtAudience("");
+      setEvtAudience(""); setFormCategory("");
     } catch {
       toast.error("Could not save event");
     }
   };
 
-  // Toggle favorite
+  // favorite, attend, geo… (unchanged)
   const toggleFavorite = async id => {
     if (!isAuthenticated) return toast.error("Log in to favorite");
     try {
@@ -178,7 +166,7 @@ const EventSearch = ({ isLoaded }) => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.sub })
+          body:    JSON.stringify({ userId: user.sub })
         }
       );
       if (!res.ok) throw new Error();
@@ -191,34 +179,26 @@ const EventSearch = ({ isLoaded }) => {
     }
   };
 
-  // Attend event
   const handleAttendEvent = evt => {
-    const my = JSON.parse(localStorage.getItem("myEvents") || "[]");
-    if (my.find(e => e.id === evt.id)) return toast.info("Already joined");
+    const my = JSON.parse(localStorage.getItem("myEvents")||"[]");
+    if (my.find(e=>e.id===evt.id)) return toast.info("Already joined");
     my.push(evt);
     localStorage.setItem("myEvents", JSON.stringify(my));
     toast.success("Added to your profile");
   };
 
-  // Geolocate
   const handleUseMyLocation = () => {
-    if (!navigator.geolocation) {
-      return toast.error("Geolocation not supported");
-    }
+    if (!navigator.geolocation) return toast.error("Geolocation not supported");
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        setCoordinates({ lat: coords.latitude, lng: coords.longitude });
-      },
+      ({coords}) => setCoordinates({ lat: coords.latitude, lng: coords.longitude }),
       () => toast.error("Could not get your location"),
       { timeout: 10000 }
     );
   };
 
-  // Render
   if (!isLoaded) return <p>Loading map…</p>;
-
   const displayList = showOnlyFavorites
-    ? filteredEvents.filter(e => favorites.includes(e.id))
+    ? filteredEvents.filter(e=>favorites.includes(e.id))
     : filteredEvents;
 
   return (
@@ -228,17 +208,11 @@ const EventSearch = ({ isLoaded }) => {
         {isAuthenticated && (
           <div className="mb-3">
             {!showAddEvent ? (
-              <button
-                className="add-event-btn"
-                onClick={() => setShowAddEvent(true)}
-              >
+              <button className="add-event-btn" onClick={()=>setShowAddEvent(true)}>
                 ➕ Add Event
               </button>
             ) : (
-              <button
-                className="cancel-event-btn"
-                onClick={() => setShowAddEvent(false)}
-              >
+              <button className="cancel-event-btn" onClick={()=>setShowAddEvent(false)}>
                 ✖ Cancel
               </button>
             )}
@@ -249,24 +223,19 @@ const EventSearch = ({ isLoaded }) => {
         {showAddEvent && (
           <div className="event-form-container mb-4">
             <h3>Add New Event</h3>
-            <form
-              onSubmit={e => {
-                e.preventDefault();
-                handleAddEvent();
-              }}
-            >
+            <form onSubmit={e=>{ e.preventDefault(); handleAddEvent(); }}>
               <div className="form-group mb-2">
                 <input
                   className="form-control"
                   placeholder="Title"
                   value={title}
-                  onChange={e => setTitle(e.target.value)}
+                  onChange={e=>setTitle(e.target.value)}
                 />
               </div>
               <div className="form-group mb-2">
                 <AutocompleteInput
                   placeholder="Enter address"
-                  onPlaceSelected={place => {
+                  onPlaceSelected={place=>{
                     if (!place.geometry) return;
                     setEvtLocation(place.formatted_address);
                     setEvtLat(place.geometry.location.lat());
@@ -279,13 +248,13 @@ const EventSearch = ({ isLoaded }) => {
                   type="date"
                   className="form-control me-1"
                   value={start}
-                  onChange={e => setStart(e.target.value)}
+                  onChange={e=>setStart(e.target.value)}
                 />
                 <input
                   type="time"
                   className="form-control"
                   value={startTime}
-                  onChange={e => setStartTime(e.target.value)}
+                  onChange={e=>setStartTime(e.target.value)}
                 />
               </div>
               <div className="form-group-row mb-2">
@@ -293,20 +262,20 @@ const EventSearch = ({ isLoaded }) => {
                   type="date"
                   className="form-control me-1"
                   value={end}
-                  onChange={e => setEnd(e.target.value)}
+                  onChange={e=>setEnd(e.target.value)}
                 />
                 <input
                   type="time"
                   className="form-control"
                   value={endTime}
-                  onChange={e => setEndTime(e.target.value)}
+                  onChange={e=>setEndTime(e.target.value)}
                 />
               </div>
               <div className="form-group-row mb-2">
                 <select
                   className="form-select me-1"
                   value={evtAudience}
-                  onChange={e => setEvtAudience(e.target.value)}
+                  onChange={e=>setEvtAudience(e.target.value)}
                 >
                   <option value="">Any Audience</option>
                   <option>Everyone</option>
@@ -315,8 +284,8 @@ const EventSearch = ({ isLoaded }) => {
                 </select>
                 <select
                   className="form-select"
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
+                  value={formCategory}               // ← use formCategory
+                  onChange={e=>setFormCategory(e.target.value)}
                 >
                   <option value="">Any Category</option>
                   <option>Music</option>
@@ -331,7 +300,7 @@ const EventSearch = ({ isLoaded }) => {
                   rows={3}
                   placeholder="Description"
                   value={description}
-                  onChange={e => setDescription(e.target.value)}
+                  onChange={e=>setDescription(e.target.value)}
                 />
               </div>
               <button type="submit" className="add-event-btn">
@@ -348,21 +317,19 @@ const EventSearch = ({ isLoaded }) => {
           {/* LEFT SIDE */}
           <div className="col-md-8">
             <h1>Upcoming Events</h1>
-
-            {/* Search Bar */}
             <div className="d-flex align-items-center mb-3 search-bar-container">
               <input
                 type="text"
                 className="form-control me-2"
                 placeholder="Search events..."
                 value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
+                onChange={e=>setSearchInput(e.target.value)}
               />
               <AutocompleteInput
                 value={locationInput}
-                onChange={e => setLocationInput(e.target.value)}
+                onChange={e=>setLocationInput(e.target.value)}
                 placeholder="Enter city or zip code..."
-                onPlaceSelected={place => {
+                onPlaceSelected={place=>{
                   if (!place.geometry) return;
                   const coords = {
                     lat: place.geometry.location.lat(),
@@ -372,28 +339,18 @@ const EventSearch = ({ isLoaded }) => {
                   setLocationInput(place.formatted_address);
                 }}
               />
-              <button
-                className="btn btn-danger ms-2"
-                onClick={() => {}}
-                aria-label="Search"
-              >
+              <button className="btn btn-danger ms-2" onClick={()=>{}} aria-label="Search">
                 <FaSearch />
               </button>
-              <button
-                className="btn btn-secondary ms-2"
-                onClick={handleUseMyLocation}
-                aria-label="Use my location"
-              >
+              <button className="btn btn-secondary ms-2" onClick={handleUseMyLocation}>
                 Use My Location
               </button>
             </div>
-
-            {/* Filters */}
             <div className="d-flex mb-4 gap-3">
               <select
                 className="form-select"
                 value={dateFilter}
-                onChange={e => setDateFilter(e.target.value)}
+                onChange={e=>setDateFilter(e.target.value)}
               >
                 <option value="">Any Day</option>
                 <option value="today">Today</option>
@@ -404,8 +361,8 @@ const EventSearch = ({ isLoaded }) => {
               </select>
               <select
                 className="form-select"
-                value={category}
-                onChange={e => setCategory(e.target.value)}
+                value={filterCategory}               // ← use filterCategory here
+                onChange={e=>setFilterCategory(e.target.value)}
               >
                 <option value="">Any Category</option>
                 <option>Music</option>
@@ -416,7 +373,7 @@ const EventSearch = ({ isLoaded }) => {
               <select
                 className="form-select"
                 value={audienceFilter}
-                onChange={e => setAudienceFilter(e.target.value)}
+                onChange={e=>setAudienceFilter(e.target.value)}
               >
                 <option value="">Any Audience</option>
                 <option>Everyone</option>
@@ -424,14 +381,9 @@ const EventSearch = ({ isLoaded }) => {
                 <option>21+</option>
               </select>
             </div>
-
-            {/* Distance */}
             <div className="distance-slider-wrapper mb-4">
               <label htmlFor="distanceSlider" className="form-label">
-                Distance:{" "}
-                {distanceFilter === 0
-                  ? "Any"
-                  : `${distanceFilter} miles`}
+                Distance: {distanceFilter === 0 ? "Any" : `${distanceFilter} miles`}
               </label>
               <input
                 id="distanceSlider"
@@ -440,34 +392,27 @@ const EventSearch = ({ isLoaded }) => {
                 min="0"
                 max="100"
                 value={distanceFilter}
-                onChange={e => setDistanceFilter(+e.target.value)}
+                onChange={e=>setDistanceFilter(+e.target.value)}
               />
             </div>
-
-            {/* Favorites Toggle */}
             <div className="form-check mb-3">
               <input
                 className="form-check-input"
                 type="checkbox"
                 id="favoriteToggle"
                 checked={showOnlyFavorites}
-                onChange={e => setShowOnlyFavorites(e.target.checked)}
+                onChange={e=>setShowOnlyFavorites(e.target.checked)}
               />
-              <label
-                className="form-check-label"
-                htmlFor="favoriteToggle"
-              >
+              <label className="form-check-label" htmlFor="favoriteToggle">
                 Show only favorites
               </label>
             </div>
-
-            {/* Event List */}
             <div className="row">
               {displayList.map(evt => (
                 <div
                   key={evt.id}
                   className="col-md-6 mb-4"
-                  onClick={() => setActiveEvent(evt)}
+                  onClick={()=>setActiveEvent(evt)}
                 >
                   <div className="card shadow-sm">
                     <div className="card-body">
@@ -480,44 +425,26 @@ const EventSearch = ({ isLoaded }) => {
                             toggleFavorite(evt.id);
                           }}
                         >
-                          {favorites.includes(evt.id) ? (
-                            <FaHeart />
-                          ) : (
-                            <FaRegHeart />
-                          )}
+                          {favorites.includes(evt.id) ? <FaHeart /> : <FaRegHeart />}
                         </button>
                       </div>
-                      <p className="card-text">
-                        <strong>Date:</strong>{" "}
-                        {evt.date
-                          ? formatDisplayDate(evt.date)
-                          : "N/A"}
+                      <p className="card-text"><strong>Date:</strong>{" "}
+                        {evt.date ? formatDisplayDate(evt.date) : "N/A"}
                       </p>
-                      <p className="card-text">
-                        <strong>Location:</strong> {evt.location}
-                      </p>
-                      <p className="card-text">
-                        <strong>Audience:</strong>{" "}
-                        {evt.audience || "Everyone"}
-                      </p>
-                      <p className="card-text">
-                        {evt.description}
-                      </p>
+                      <p className="card-text"><strong>Location:</strong> {evt.location}</p>
+                      <p className="card-text"><strong>Audience:</strong> {evt.audience||"Everyone"}</p>
+                      <p className="card-text">{evt.description}</p>
                     </div>
                   </div>
                 </div>
               ))}
-              {displayList.length === 0 && <p>No events found.</p>}
+              {displayList.length===0 && <p>No events found.</p>}
             </div>
           </div>
 
           {/* RIGHT SIDE – Map */}
           <div className="col-md-4">
-            <MapWithMarkers
-              center={coordinates}
-              isLoaded={isLoaded}
-              events={filteredEvents}
-            />
+            <MapWithMarkers center={coordinates} isLoaded={isLoaded} events={filteredEvents} />
           </div>
         </div>
       </div>
@@ -525,10 +452,8 @@ const EventSearch = ({ isLoaded }) => {
       {/* Attend Modal */}
       <Modal
         event={activeEvent}
-        onClose={() => setActiveEvent(null)}
-        onAttend={() =>
-          activeEvent && handleAttendEvent(activeEvent)
-        }
+        onClose={()=>setActiveEvent(null)}
+        onAttend={()=>activeEvent && handleAttendEvent(activeEvent)}
       />
     </>
   );
