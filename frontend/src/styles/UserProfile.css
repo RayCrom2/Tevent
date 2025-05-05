@@ -18,12 +18,14 @@
   background-size: cover; /* Best for scenic images */
   background-repeat: no-repeat;
   background-color: #ccc; /* fallback color */
+  border-radius: 0 0 24px 24px;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: flex-end;
   padding-bottom: 1rem;
   border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Container for the profile avatar floating at the bottom of the banner */
@@ -42,17 +44,18 @@
   width: 130px;
   height: 130px;
   border-radius: 50%;
-  border: 5px solid white;
+  border: 6px solid white;
   object-fit: cover;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
 }
 
 /* Wrapper for the entire profile content area including cards and layout */
 .profile-wrapper {
   width: 100%;
   max-width: 100vw;
-  background-color: #f3f2ef;
-  padding-top: 5rem;
+  background-color: var(--background);
+  padding-top: 6rem;
   padding-bottom: 3rem;
   margin: 0;
   overflow-x: hidden; /* Just in case there's overflow */
@@ -61,16 +64,19 @@
 .profile-card {
   background: var(--card-bg);
   max-width: 800px;
-  margin: 0 auto 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 0 auto 2rem;
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
   padding: 2rem;
   text-align: center;
+  border: 1px solid #eaeaea;
+  transition: box-shadow 0.3s ease;
 }
 
 /* Styles for user's name inside the profile card */
 .profile-card h2 {
-  font-size: 1.75rem;
+  font-size: 1.9rem;
+  font-weight: 600;
   margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
@@ -78,9 +84,9 @@
 /* Styles for username and email under the user's name */
 .profile-username,
 .profile-email {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--text-muted);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
 }
 
 /* Section that shows the live location map styled like a profile card */
@@ -168,7 +174,8 @@
   border-radius: 6px;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  /* transition: background 0.2s ease; */
+  transition: all 0.25s ease-in-out;
 }
 
 /*Editable Bio & Contact Inputs*/
@@ -187,6 +194,8 @@ input.form-control {
 /* Hover effect for regular modal buttons */
 .modal-button:hover {
   background-color: #004182;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
 /* Red variant of the modal button used for deleting avatar */
@@ -213,9 +222,23 @@ input.form-control {
     margin-top: 0;
   }
 
+  .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   /* Consistent spacing for content wrapper on mobile */
   .profile-wrapper {
     padding-top: 5rem;
+  }
+
+  .profile-card {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .photo-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -223,6 +246,8 @@ input.form-control {
 body {
   margin: 0;
   padding: 0;
+  background-color: var(--background);
+  font-family: 'Inter', sans-serif;
 }
 
 .photo-gallery {
@@ -267,7 +292,7 @@ body {
   object-fit: cover;
 }
 
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .photo-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -276,7 +301,7 @@ body {
   .photo-grid {
     grid-template-columns: 1fr;
   }
-}
+} */
 
 .circular-upload-button {
   display: inline-flex;
@@ -285,7 +310,7 @@ body {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: #007bff;
+  background-color: #374151;
   cursor: pointer;
   margin-left: 15px;
 }
