@@ -1,4 +1,4 @@
-
+// src/components/EventSearch.js
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaHeart, FaRegHeart } from "react-icons/fa";
 import { getDistanceFromLatLng } from "../utils/distanceUtils";
@@ -8,668 +8,528 @@ import { toast } from "react-toastify";
 import { filterByDate } from "../utils/dateUtils";
 import Fuse from "fuse.js";
 import "bootstrap/dist/css/bootstrap.min.css";
-import '../styles/EventSearch.css'; 
+import "../styles/EventSearch.css";
 
-
-import AutocompleteInput from "../components/AutocompleteInput";
-import Modal from "../components/Modal";
-import MapWithMarkers from "../components/MapWithMarkers";
+import AutocompleteInput from "./AutocompleteInput";
+import Modal from "./Modal";
+import MapWithMarkers from "./MapWithMarkers";
 import { filterByAudience } from "../utils/audienceUtils";
-
 
 function formatDisplayDate(isoString) {
   const options = { year: "numeric", month: "long", day: "numeric" };
   return new Date(isoString).toLocaleDateString(undefined, options);
 }
 
+function formatToYMD(dateStr) {
+  const d = new Date(dateStr);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
 const EventSearch = ({ isLoaded }) => {
   const { isAuthenticated, user } = useAuth0();
+
+  // Master lists & filters
+  const [allEvents, setAllEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const [category, setCategory] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [category, setCategory] = useState("");
+  const [audienceFilter, setAudienceFilter] = useState("");
   const [distanceFilter, setDistanceFilter] = useState(0);
   const [locationInput, setLocationInput] = useState("");
-  const [activeEvent, setActiveEvent] = useState(null);
-  const [favorites, setFavorites] = useState([]);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  const [audienceFilter, setAudienceFilter] = useState("");
-  const [allEvents, setAllEvents] = useState([]);
-  const [showAddEvent, setShowAddEvent] = useState(false);
-  const [description, setDescription] = useState('');
-  const [title, setTitle] = useState('');
-  const [start, setStart] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [end, setEnd] = useState('');
-  const [location, setLocation] = useState('');
-  const [audience, setAudience] = useState('');
-  const [lat, setLat] = useState('');
-  const [lng, setLng] = useState('');
-  const [events, setEvents] = useState([]);
-  const currentDate = new Date().toLocaleDateString('en-CA');
-  const defaultStartTimeF = '09:00';
-  const defaultEndTimeF = '17:00';
 
+  // Favourites & active event
+  const [favorites, setFavorites] = useState([]);
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  const [activeEvent, setActiveEvent] = useState(null);
+
+  // Map center
   const [coordinates, setCoordinates] = useState({ lat: 38.4404, lng: -122.7141 });
 
-  // 🌍 On mount, try to center map on the user's current location
-  useEffect(() => {
-    if (!("geolocation" in navigator)) return;
+  // Add-Event form state
+  const [showAddEvent, setShowAddEvent] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [start, setStart] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [end, setEnd] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [evtLocation, setEvtLocation] = useState("");
+  const [evtLat, setEvtLat] = useState("");
+  const [evtLng, setEvtLng] = useState("");
+  const [evtAudience, setEvtAudience] = useState("");
 
+  // Fetch events on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const normalized = data.map(e => ({ ...e, id: e._id || e.id }));
+        setAllEvents(normalized);
+        setFilteredEvents(normalized.filter(e =>
+          typeof e.lat === "number" && typeof e.lng === "number"
+        ));
+      } catch {
+        toast.error("Failed to load events");
+      }
+    })();
+  }, []);
+
+  // Filter + search whenever inputs change
+  useEffect(() => {
+    let results = allEvents;
+
+    // text search
+    if (searchInput) {
+      const fuse = new Fuse(allEvents, {
+        keys: ["title", "location"],
+        threshold: 0.3
+      });
+      results = fuse.search(searchInput).map(r => r.item);
+    }
+
+    // date / category / audience
+    if (dateFilter) results = filterByDate(results, dateFilter);
+    if (category) results = results.filter(e =>
+      e.category?.toLowerCase() === category.toLowerCase()
+    );
+    if (audienceFilter) results = filterByAudience(results, audienceFilter);
+
+    // location & distance
+    let userCoords = { ...coordinates };
+    if (locationInput) {
+      fetchCoordinates(locationInput).then(coords => {
+        if (coords) {
+          userCoords = coords;
+          setCoordinates(coords);
+        }
+      });
+    }
+    if (distanceFilter > 0) {
+      results = results.filter(e =>
+        getDistanceFromLatLng(
+          userCoords.lat, userCoords.lng, e.lat, e.lng
+        ) <= distanceFilter
+      );
+    }
+
+    setFilteredEvents(results);
+  }, [
+    allEvents,
+    searchInput,
+    dateFilter,
+    category,
+    audienceFilter,
+    locationInput,
+    distanceFilter,
+    coordinates
+  ]);
+
+  // Submit new event
+  const handleAddEvent = async () => {
+    if (!title || !start || !end || !evtLocation || !evtLat || !evtLng) {
+      return alert("Please fill all required fields");
+    }
+    const newEvt = {
+      title,
+      description,
+      location: evtLocation,
+      audience: evtAudience,
+      category,
+      date: formatToYMD(start),
+      startTime,
+      endTime,
+      lat: evtLat,
+      lng: evtLng
+    };
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newEvt)
+      });
+      if (!res.ok) throw new Error();
+      // refresh list
+      const refreshed = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`).then(r => r.json());
+      setAllEvents(refreshed.map(e => ({ ...e, id: e._id || e.id })));
+      toast.success("Event added!");
+      setShowAddEvent(false);
+      // reset form
+      setTitle(""); setDescription("");
+      setStart(""); setStartTime("");
+      setEnd(""); setEndTime("");
+      setEvtLocation(""); setEvtLat(""); setEvtLng("");
+      setEvtAudience("");
+    } catch {
+      toast.error("Could not save event");
+    }
+  };
+
+  // Toggle favorite
+  const toggleFavorite = async id => {
+    if (!isAuthenticated) return toast.error("Log in to favorite");
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}api/events/${id}/favorite`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.sub })
+        }
+      );
+      if (!res.ok) throw new Error();
+      const { favorited } = await res.json();
+      setFavorites(favs =>
+        favorited ? [...favs, id] : favs.filter(x => x !== id)
+      );
+    } catch {
+      toast.error("Favorite toggle failed");
+    }
+  };
+
+  // Attend event
+  const handleAttendEvent = evt => {
+    const my = JSON.parse(localStorage.getItem("myEvents") || "[]");
+    if (my.find(e => e.id === evt.id)) return toast.info("Already joined");
+    my.push(evt);
+    localStorage.setItem("myEvents", JSON.stringify(my));
+    toast.success("Added to your profile");
+  };
+
+  // Geolocate
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      return toast.error("Geolocation not supported");
+    }
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         setCoordinates({ lat: coords.latitude, lng: coords.longitude });
       },
-      (err) => {
-        console.warn("Geolocation failed, using default:", err);
-      },
+      () => toast.error("Could not get your location"),
       { timeout: 10000 }
     );
-  }, []);
-
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem("favorites");
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
-  }, []);
-
- 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setFilteredEvents([]);
-      setFavorites([]);
-      setShowOnlyFavorites(false);
-      setSearchInput("");
-      setCategory("");
-      setDateFilter("");
-      setDistanceFilter(0);
-      setAudienceFilter("");
-      setActiveEvent(null);
-      setHasSearched(false);
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-  }, [favorites]);
-
-  const fetchEvents = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`);
-      if (!response.ok) throw new Error("Failed to fetch events");
-
-      const data = await response.json();
-
-      //Normalize _id to id
-      const normalized = data.map((event) => ({
-        ...event,
-        id: event._id || event.id,
-      }));
-
-      //Filter events with valid coordinates
-      const cleanData = normalized.filter(
-        (event) => 
-          typeof event.lat === "number" &&
-          typeof event.lng === "number" &&
-          !isNaN(event.lat) &&
-          !isNaN(event.lng)
-      );
-
-      //Set state
-      setAllEvents(normalized);      // Full list including all event data
-      setFilteredEvents(cleanData);  // Cleaned list for rendering/map
-
-      console.log("All events from backend:", normalized);     // Log full data
-      console.log("Cleaned events with valid coordinates:", cleanData); // Log filtered
-
-    } catch (err) {
-      console.error(" Error loading events:", err);
-      toast.error("Failed to load events from server.");
-    }
   };
 
-  useEffect(() => {
-    
-    fetchEvents();
-  }, []);
+  // Render
+  if (!isLoaded) return <p>Loading map…</p>;
 
-
-  const handleAttendEvent = (event) => {
-    const myEvents = JSON.parse(localStorage.getItem("myEvents")) || [];
-    if (myEvents.find((e) => e.id === event.id)) {
-      toast.info("You already added this event!");
-      return;
-    }
-    myEvents.push(event);
-    localStorage.setItem("myEvents", JSON.stringify(myEvents));
-    toast.success("Event added to your profile!");
-  };
-  //For add events 
-  const handleAddEvent = async () => {
-    if (!title || !start || !end || !location || !lat || !lng) {
-      return alert("Please fill out all required fields including location.");
-    }
-  
-    const newEvent = {
-      title,
-      description,
-      location,
-      audience,
-      category,
-      lat,
-      lng,
-      date: formatToYMD(start),
-      startTime,
-      endTime,
-    };
- try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/events`, {
-        method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newEvent)
-        });
-  
-      if (!response.ok) throw new Error("Failed to save event");
-  
-      const savedEvent = await response.json();
-  
-      // Add the event to the calendar view
-      await fetchEvents(); // refresh the entire calendar
-  
-      toast.success("Event successfully added!");
-  
-      // Reset form
-      setTitle('');
-      setStart('');
-      setEnd('');
-      setStartTime('');
-      setEndTime('');
-      setLocation('');
-      setLat('');
-      setLng('');
-      setAudience('');
-      setCategory('');
-      setDescription('');
-      setShowAddEvent(false);
-    } catch (error) {
-      console.error("Error saving event:", error);
-      toast.error("Failed to save event. Try again.");
-    }
-  };
-  
-
-  const handleButtonClick = () => {
-    setShowAddEvent(true);
-  };
-
-  const toggleFavorite = async (eventId) => {
-    if (!isAuthenticated) {
-      toast.error("Must be signed in to favorite events");
-      return;
-    }
-  
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/users/favorites`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          auth0Id: user.sub, 
-          eventId,
-        }),
-      });
-  
-      if (!response.ok) throw new Error("Failed to toggle favorite");
-  
-      const result = await response.json();
-  
-      setFavorites(result.updatedFavorites);
-      toast.success(result.message);
-  
-    } catch (err) {
-      console.error("Toggle favorite error:", err);
-      toast.error("Something went wrong. Please try again.");
-    }
-  };
-  
-
-  useEffect(() => {
-    const fetchFavorites = async () => {
-      if (!isAuthenticated || !user) return;
-  
-      try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}api/users/favorites?auth0Id=${user.sub}`);
-        if (!response.ok) throw new Error("Failed to fetch favorites");
-        const data = await response.json();
-        setFavorites(data.favorites.map(fav => fav._id || fav)); // depends if your API returns full event or IDs
-      } catch (err) {
-        console.error("Error fetching favorites:", err);
-      }
-    };
-  
-    fetchFavorites();
-  }, [isAuthenticated, user]);
-  
-  
-
-  const handleUseMyLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-  
-          const userCoords = {
-            lat: latitude,
-            lng: longitude,
-          };
-  
-          setCoordinates(userCoords);
-          handleSearch({ newCoordinates: userCoords });
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              toast.error("Permission denied. Please allow location access.");
-              break;
-            case error.POSITION_UNAVAILABLE:
-              toast.error("Location information is unavailable.");
-              break;
-            case error.TIMEOUT:
-              toast.error("Location request timed out.");
-              break;
-            default:
-              toast.error("Unable to retrieve your location.");
-          }
-        }
-      );
-    } else {
-      toast.error("Geolocation is not supported by your browser.");
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-  function formatToYMD(dateStr) {
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = `${date.getMonth() + 1}`.padStart(2, "0");
-    const day = `${date.getDate()}`.padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-  
-
-
-const handleSearch = async ({ newCoordinates } = {}) => {
-  let filtered = allEvents;
-
-  // 1) Title/Location text search
-  if (searchInput.trim()) {
-    const fuse = new Fuse(allEvents, {
-      keys: ["title", "location"],
-      threshold: 0.3,
-    });
-    const results = fuse.search(searchInput);
-    filtered = results.map((r) => r.item);
-  }
-
-  // 2) Category filter
-  if (category) {
-    filtered = filtered.filter(
-      (event) => (event.category || "").toLowerCase() === category.toLowerCase()
-    );
-  }
-
-  // 3) Date filter
-  if (dateFilter) {
-    filtered = filterByDate(filtered, dateFilter);
-  }
-
-  // 4) Audience filter
-  if (audienceFilter) {
-    filtered = filterByAudience(filtered, audienceFilter);
-  }
-
-  // 5) Location and distance filtering
-  const userCoords = newCoordinates || coordinates;
-
-  if (locationInput.trim()) {
-    const coords = await fetchCoordinates(locationInput);
-    if (coords) {
-      userCoords.lat = coords.lat;
-      userCoords.lng = coords.lng;
-      setCoordinates(coords);
-    } else {
-      // Fallback: string-based location match
-      filtered = filtered.filter((event) =>
-        event.location.toLowerCase().includes(locationInput.toLowerCase())
-      );
-    }
-  }
-
-  if (distanceFilter > 0) {
-    filtered = filtered.filter((event) => {
-      const distance = getDistanceFromLatLng(
-        userCoords.lat,
-        userCoords.lng,
-        event.lat,
-        event.lng
-      );
-      return distance <= distanceFilter;
-    });
-  }
-
-  setFilteredEvents(filtered);
-  setHasSearched(true);
-};
-
-  // Re-run search if any filter changes:
-  useEffect(() => {
-    handleSearch();
-  }, [category, dateFilter, distanceFilter, audienceFilter]);
-
-  const eventsToDisplay = showOnlyFavorites ? filteredEvents.filter(e => favorites.includes(e.id)) : filteredEvents;
-
-  if (!isLoaded) return <p>Loading Google Maps...</p>;
+  const displayList = showOnlyFavorites
+    ? filteredEvents.filter(e => favorites.includes(e.id))
+    : filteredEvents;
 
   return (
-   <>
-    {showAddEvent && (
-    <div className="event-form-container">
-      <h3>Add New Event</h3>
+    <>
+      {/* ─ Add / Cancel Toggle ────────────────────────── */}
+      <div className="container mt-4">
+        {isAuthenticated && (
+          <div className="mb-3">
+            {!showAddEvent ? (
+              <button
+                className="add-event-btn"
+                onClick={() => setShowAddEvent(true)}
+              >
+                ➕ Add Event
+              </button>
+            ) : (
+              <button
+                className="cancel-event-btn"
+                onClick={() => setShowAddEvent(false)}
+              >
+                ✖ Cancel
+              </button>
+            )}
+          </div>
+        )}
 
-      <div className="form-group">
-        <input
-          type="text"
-          placeholder="Event Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        {/* ─ Add-Event Form ───────────────────────────── */}
+        {showAddEvent && (
+          <div className="event-form-container mb-4">
+            <h3>Add New Event</h3>
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                handleAddEvent();
+              }}
+            >
+              <div className="form-group mb-2">
+                <input
+                  className="form-control"
+                  placeholder="Title"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                />
+              </div>
+              <div className="form-group mb-2">
+                <AutocompleteInput
+                  placeholder="Enter address"
+                  onPlaceSelected={place => {
+                    if (!place.geometry) return;
+                    setEvtLocation(place.formatted_address);
+                    setEvtLat(place.geometry.location.lat());
+                    setEvtLng(place.geometry.location.lng());
+                  }}
+                />
+              </div>
+              <div className="form-group-row mb-2">
+                <input
+                  type="date"
+                  className="form-control me-1"
+                  value={start}
+                  onChange={e => setStart(e.target.value)}
+                />
+                <input
+                  type="time"
+                  className="form-control"
+                  value={startTime}
+                  onChange={e => setStartTime(e.target.value)}
+                />
+              </div>
+              <div className="form-group-row mb-2">
+                <input
+                  type="date"
+                  className="form-control me-1"
+                  value={end}
+                  onChange={e => setEnd(e.target.value)}
+                />
+                <input
+                  type="time"
+                  className="form-control"
+                  value={endTime}
+                  onChange={e => setEndTime(e.target.value)}
+                />
+              </div>
+              <div className="form-group-row mb-2">
+                <select
+                  className="form-select me-1"
+                  value={evtAudience}
+                  onChange={e => setEvtAudience(e.target.value)}
+                >
+                  <option value="">Any Audience</option>
+                  <option>Everyone</option>
+                  <option>18+</option>
+                  <option>21+</option>
+                </select>
+                <select
+                  className="form-select"
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                >
+                  <option value="">Any Category</option>
+                  <option>Music</option>
+                  <option>Business</option>
+                  <option>Food & Drink</option>
+                  <option>Health & Fitness</option>
+                </select>
+              </div>
+              <div className="form-group mb-2">
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  placeholder="Description"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="add-event-btn">
+                Submit Event
+              </button>
+            </form>
+          </div>
+        )}
       </div>
 
-        <AutocompleteInput
-        className="form-group"
-        placeholder="Enter address"
-        onPlaceSelected={(place) => {
-            if (!place.geometry) return;
+      {/* ─ Search, Filters, List & Map ───────────────── */}
+      <div className="container mt-4">
+        <div className="row">
+          {/* LEFT SIDE */}
+          <div className="col-md-8">
+            <h1>Upcoming Events</h1>
 
-            setLocation(place.formatted_address);
-            setLat(place.geometry.location.lat());
-            setLng(place.geometry.location.lng());
-        }}></AutocompleteInput>
-        <div className="form-group-row">
-            <input
-              type="date"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
-            />
-            <input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-            />
-          </div>
-
-          
-
-          <div className="form-group-row">
-            <input
-              type="date"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-            />
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group-row">
-            <select
-              className="form-select"
-              value={audience}
-              onChange={(e) => setAudience(e.target.value)}
-            >
-              <option value="">Any Audience</option>
-              <option value="Everyone">Everyone</option>
-              <option value="18+">18+</option>
-              <option value="21+">21+</option>
-            </select>
-          </div>
-
-        <div className="form-group-row">
-        <select
-              className="form-select"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option value="">Any Category</option>
-              <option value="Music">Music</option>
-              <option value="Business">Business</option>
-              <option value="Food & Drink">Food & Drink</option>
-              <option value="Health & Fitness">Health & Fitness</option>
-              <option value="N/A">N/A</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <textarea
-              className="event-description-input"
-              placeholder="Event Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          <div className="button-row">
-            <button className="add-event-btn" onClick={handleAddEvent}> Submit Event</button>
-            <button className="cancel-event-btn" onClick={() => setShowAddEvent(false)}>Cancel</button>
-          </div>
-
-          
-        </div>
-      )}
-  
-    <div className="container mt-4">
-            {isAuthenticated && (
-          <button className="add-event-btn" onClick={handleButtonClick}>➕ Add Event</button>
-        )}
-      <div className="row">
-        {/* LEFT SIDE */}
-        <div className="col-md-8">
-          <h1>Upcoming Events</h1>
-  
-          {/* SEARCH BAR */}
-          <div className="d-flex align-items-center mb-3 search-bar-container">
-            <input
-              type="text"
-              className="form-control me-2"
-              placeholder="Search events..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              aria-label="Search input"
-            />
-  
-            <AutocompleteInput
-              value={locationInput}
-              onChange={(e) => setLocationInput(e.target.value)}
-              placeholder="Enter city or zip code..."
-              onPlaceSelected={(place) => {
-                const coords = {
-                  lat: place.geometry.location.lat(),
-                  lng: place.geometry.location.lng(),
-                };
-                setCoordinates(coords);
-                setLocationInput(place.formatted_address);
-              }}
-              onKeyDown={handleKeyDown}
-            />
-  
-            <button className="btn btn-danger" onClick={handleSearch}
-              aria-label="Search">
-              <FaSearch />
-            </button>
-  
-            <button
-              className="btn btn-secondary ms-2"
-              onClick={handleUseMyLocation}
-              aria-label="Use my location"
-            >
-              Use My Location
-            </button>
-          </div>
-  
-          {/* FILTERS */}
-          <div className="d-flex mb-4 gap-3">
-            <select className="form-select" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-
-              <option value="">Any Day</option>
-              <option value="today">Today</option>
-              <option value="tomorrow">Tomorrow</option>
-              <option value="this week">This Week</option>
-              <option value="this weekend">This Weekend</option>
-              <option value="next week">Next Week</option>
-            </select>
-
-            {/* Category Filter */}
-            <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="">Any Category</option>
-              <option value="Music">Music</option>
-              <option value="Business">Business</option>
-              <option value="Food & Drink">Food & Drink</option>
-              <option value="Health & Fitness">Health & Fitness</option>
-            </select>
-
-            {/* Audience Filter */}
-            <select className="form-select" value={audienceFilter} onChange={(e) => setAudienceFilter(e.target.value)}>
-              <option value="">Any Audience</option>
-              <option value="Everyone">Everyone</option>
-              <option value="18+">18+</option>
-              <option value="21+">21+</option>
-            </select>
-          </div>
-  
-          {/* Distance Slider */}
-          <div className="distance-slider-wrapper">
-            <label htmlFor="distanceSlider" className="form-label">
-              <h5>
-                Event Search Distance:{" "}
-                {distanceFilter === 0 ? "Any" : `${distanceFilter} miles`}
-              </h5>
-            </label>
-            <input
-              id="distanceSlider"
-              type="range"
-              className="form-range"
-              min="0"
-              max="100"
-              value={distanceFilter}
-              onChange={(e) => setDistanceFilter(parseInt(e.target.value, 10))}
-            />
-          </div>
-  
-          {/* Favorites toggle */}
-          <div className="form-check mb-3">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="favoriteToggle"
-              checked={showOnlyFavorites}
-              onChange={(e) => setShowOnlyFavorites(e.target.checked)}
-            />
-            <label className="form-check-label" htmlFor="favoriteToggle">
-              Show only favorites
-            </label>
-          </div>
-  
-          {/* EVENT LIST */}
-          <div className="row">
-            {eventsToDisplay.map((event) => (
-              <div
-                key={event.id}
-                className="col-md-6 mb-4"
-                onClick={() => setActiveEvent(event)}
+            {/* Search Bar */}
+            <div className="d-flex align-items-center mb-3 search-bar-container">
+              <input
+                type="text"
+                className="form-control me-2"
+                placeholder="Search events..."
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+              />
+              <AutocompleteInput
+                value={locationInput}
+                onChange={e => setLocationInput(e.target.value)}
+                placeholder="Enter city or zip code..."
+                onPlaceSelected={place => {
+                  if (!place.geometry) return;
+                  const coords = {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                  };
+                  setCoordinates(coords);
+                  setLocationInput(place.formatted_address);
+                }}
+              />
+              <button
+                className="btn btn-danger ms-2"
+                onClick={() => {}}
+                aria-label="Search"
               >
-                <div className="card shadow-sm">
-                  <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <h5
-                        className="card-title"
-                        style={{ cursor: "pointer" }}
-                      >
-                        {event.title}
-                      </h5>
-                      <button
-                        className="btn btn-link text-danger"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(event.id);
-                        }}
-                        title={
-                          favorites.includes(event.id)
-                            ? "Remove from favorites"
-                            : "Add to favorites"
-                        }
-                      >
-                        {favorites.includes(event.id) ? <FaHeart /> : <FaRegHeart />}
-                      </button>
+                <FaSearch />
+              </button>
+              <button
+                className="btn btn-secondary ms-2"
+                onClick={handleUseMyLocation}
+                aria-label="Use my location"
+              >
+                Use My Location
+              </button>
+            </div>
+
+            {/* Filters */}
+            <div className="d-flex mb-4 gap-3">
+              <select
+                className="form-select"
+                value={dateFilter}
+                onChange={e => setDateFilter(e.target.value)}
+              >
+                <option value="">Any Day</option>
+                <option value="today">Today</option>
+                <option value="tomorrow">Tomorrow</option>
+                <option value="this week">This Week</option>
+                <option value="this weekend">This Weekend</option>
+                <option value="next week">Next Week</option>
+              </select>
+              <select
+                className="form-select"
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+              >
+                <option value="">Any Category</option>
+                <option>Music</option>
+                <option>Business</option>
+                <option>Food & Drink</option>
+                <option>Health & Fitness</option>
+              </select>
+              <select
+                className="form-select"
+                value={audienceFilter}
+                onChange={e => setAudienceFilter(e.target.value)}
+              >
+                <option value="">Any Audience</option>
+                <option>Everyone</option>
+                <option>18+</option>
+                <option>21+</option>
+              </select>
+            </div>
+
+            {/* Distance */}
+            <div className="distance-slider-wrapper mb-4">
+              <label htmlFor="distanceSlider" className="form-label">
+                Distance:{" "}
+                {distanceFilter === 0
+                  ? "Any"
+                  : `${distanceFilter} miles`}
+              </label>
+              <input
+                id="distanceSlider"
+                type="range"
+                className="form-range"
+                min="0"
+                max="100"
+                value={distanceFilter}
+                onChange={e => setDistanceFilter(+e.target.value)}
+              />
+            </div>
+
+            {/* Favorites Toggle */}
+            <div className="form-check mb-3">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="favoriteToggle"
+                checked={showOnlyFavorites}
+                onChange={e => setShowOnlyFavorites(e.target.checked)}
+              />
+              <label
+                className="form-check-label"
+                htmlFor="favoriteToggle"
+              >
+                Show only favorites
+              </label>
+            </div>
+
+            {/* Event List */}
+            <div className="row">
+              {displayList.map(evt => (
+                <div
+                  key={evt.id}
+                  className="col-md-6 mb-4"
+                  onClick={() => setActiveEvent(evt)}
+                >
+                  <div className="card shadow-sm">
+                    <div className="card-body">
+                      <div className="d-flex justify-content-between">
+                        <h5 className="card-title">{evt.title}</h5>
+                        <button
+                          className="btn btn-link text-danger"
+                          onClick={e => {
+                            e.stopPropagation();
+                            toggleFavorite(evt.id);
+                          }}
+                        >
+                          {favorites.includes(evt.id) ? (
+                            <FaHeart />
+                          ) : (
+                            <FaRegHeart />
+                          )}
+                        </button>
+                      </div>
+                      <p className="card-text">
+                        <strong>Date:</strong>{" "}
+                        {evt.date
+                          ? formatDisplayDate(evt.date)
+                          : "N/A"}
+                      </p>
+                      <p className="card-text">
+                        <strong>Location:</strong> {evt.location}
+                      </p>
+                      <p className="card-text">
+                        <strong>Audience:</strong>{" "}
+                        {evt.audience || "Everyone"}
+                      </p>
+                      <p className="card-text">
+                        {evt.description}
+                      </p>
                     </div>
-                    <p className="card-text">
-                      <strong>Date:</strong>{" "}
-                      {event.date ? formatDisplayDate(event.date) : "N/A"}
-                    </p>
-                    <p className="card-text">
-                      <strong>Location:</strong> {event.location || "N/A"}
-                    </p>
-                    <p className="card-text">
-                      <strong>Audience:</strong> {event.audience || "Everyone"}
-                    </p>
-                    <p className="card-text">
-                      {event.description || "No description available."}
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
-            {eventsToDisplay.length === 0 && <p>No events found.</p>}
+              ))}
+              {displayList.length === 0 && <p>No events found.</p>}
+            </div>
           </div>
-        </div>
-  
-        {/* RIGHT SIDE - Map */}
-        <div className="col-md-4">
-          <div className="map-wrapper">
+
+          {/* RIGHT SIDE – Map */}
+          <div className="col-md-4">
             <MapWithMarkers
               center={coordinates}
               isLoaded={isLoaded}
-              events={filteredEvents.filter(
-                (event) =>
-                  typeof event.lat === "number" &&
-                  typeof event.lng === "number" &&
-                  !isNaN(event.lat) &&
-                  !isNaN(event.lng)
-              )}
+              events={filteredEvents}
             />
           </div>
         </div>
       </div>
-  
-      {/* Modal with attend support */}
+
+      {/* Attend Modal */}
       <Modal
         event={activeEvent}
         onClose={() => setActiveEvent(null)}
-        onAttend={() => handleAttendEvent(activeEvent)}
+        onAttend={() =>
+          activeEvent && handleAttendEvent(activeEvent)
+        }
       />
-    </div>
     </>
   );
 };

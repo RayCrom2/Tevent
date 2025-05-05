@@ -254,18 +254,8 @@ body {
   padding: 20px 0;
 }
 
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-}
 
-.photo-grid-item img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  object-fit: cover;
-}
+
 
 /* UserProfile.css */
 .photo-grid {
@@ -292,35 +282,32 @@ body {
   object-fit: cover;
 }
 
-/* @media (max-width: 768px) {
-  .photo-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 480px) {
-  .photo-grid {
-    grid-template-columns: 1fr;
-  }
-} */
 
 .circular-upload-button {
-  display: inline-flex;
-  align-items: center; /* Centers content vertically by default */
+  /* make it a flexbox */
+  display: flex;
+  align-items: center;
   justify-content: center;
+
+  /* size & shape */
   width: 30px;
   height: 30px;
   border-radius: 50%;
   background-color: #374151;
   cursor: pointer;
+
+  /* if you still want that left-margin */
   margin-left: 15px;
+
+  /* position: relative;  only needed if you switch to absolute centering */
 }
 
-/* If further adjustment is needed within the flex container */
+/* no more offset hack! */
 .white-plus {
-  margin-top: -9px; /* Adjust the vertical offset */
+  margin: 0;            /* kill that -9px hack */
   color: white;
-  font-size: 36px;
-  line-height: 1;
+  font-size: 18px;      /* tune this so it fits inside 30px circle */
+  line-height: 1;       /* so flex centering is true centering */
 }
 
 [data-theme='dark'] .profile-wrapper {
@@ -362,3 +349,13 @@ body {
   border: 1px solid #444;
 }
 
+/* Make the h3 a flex container */
+.photo-gallery h3 {
+  display: flex;
+  align-items: center;
+}
+
+/* Push the button a bit to the right of the text */
+.photo-gallery .circular-upload-button {
+  margin-left: 0.5rem;
+}
