@@ -146,6 +146,7 @@
     position: fixed;
     bottom: 5px;
     right: 5px;
+    z-index: 10000;
   }
   
   .add-event-btn:hover {
